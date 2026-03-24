@@ -1,0 +1,1019 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>MHFCS — Certificate System</title>
+<link href="https://fonts.googleapis.com/css2?family=Libre+Baskerville:wght@400;700&family=Source+Sans+3:wght@300;400;500;600&display=swap" rel="stylesheet"/>
+<style>
+:root{--gd:#1a365d;--gm:#2b6cb0;--gl:#4299e1;--gp:#ebf8ff;--gb:#3182ce;--white:#fff;--cream:#f7faff;--text:#1a202c;--gray:#718096;--shadow:0 2px 16px rgba(49,130,206,0.12)}
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
+body{font-family:"Source Sans 3",sans-serif;background:#dde8df;min-height:100vh;color:var(--text)}
+.screen{display:none;min-height:100vh}
+.screen.active{display:block}
+#screen-login{display:none;align-items:center;justify-content:center;background:linear-gradient(135deg,#0f2d1c 0%,#1a365d 60%,#2b6cb0 100%)}
+#screen-login.active{display:flex}
+.login-box{background:var(--white);border-radius:12px;padding:2.5rem 2.5rem 2rem;width:100%;max-width:400px;box-shadow:0 12px 48px rgba(0,0,0,0.3);text-align:center}
+.login-logo{font-size:2.5rem;margin-bottom:1rem}
+.login-org{font-family:"Libre Baskerville",serif;font-size:1.1rem;font-weight:700;color:#1a365d;line-height:1.3}
+.login-sub{font-size:0.78rem;color:var(--gray);margin-top:0.3rem;margin-bottom:2rem}
+.login-divider{width:40px;height:3px;background:var(--gl);margin:0.8rem auto 1.8rem}
+.lf-group{margin-bottom:1.2rem;text-align:left}
+.lf-group label{display:block;font-size:0.75rem;font-weight:600;letter-spacing:0.08em;text-transform:uppercase;color:#1a365d;margin-bottom:0.4rem}
+.lf-group input{width:100%;padding:0.7rem 1rem;border:1.5px solid #bee3f8;border-radius:6px;font-family:"Source Sans 3",sans-serif;font-size:0.92rem;color:var(--text);background:#f7faff;outline:none;transition:border-color 0.2s}
+.lf-group input:focus{border-color:#4299e1;background:#fff}
+.login-btn{width:100%;padding:0.8rem;background:linear-gradient(90deg,#1a365d,#2b6cb0);color:#fff;border:none;border-radius:6px;font-family:"Source Sans 3",sans-serif;font-size:0.95rem;font-weight:600;cursor:pointer;transition:background 0.2s;margin-top:0.5rem}
+.login-btn:hover{background:var(--gm)}
+.login-err{font-size:0.82rem;color:#c0392b;margin-top:0.6rem;min-height:1.2em}
+.navbar{background:linear-gradient(90deg,#1a365d,#2b6cb0);padding:0 5%;height:56px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:50;box-shadow:0 2px 8px rgba(0,0,0,0.2)}
+.nav-brand{font-family:"Libre Baskerville",serif;font-size:1rem;font-weight:700;color:#fff;cursor:pointer}
+.nav-right{display:flex;align-items:center;gap:0.5rem}
+.nav-user{font-size:0.8rem;color:rgba(255,255,255,0.65);margin-right:0.5rem}
+.nav-logout{background:rgba(255,255,255,0.12);color:#fff;border:1px solid rgba(255,255,255,0.25);padding:0.35rem 0.9rem;border-radius:4px;font-size:0.8rem;font-weight:500;cursor:pointer;transition:background 0.2s}
+.nav-logout:hover{background:rgba(255,255,255,0.22)}
+.home-wrap{max-width:680px;margin:3.5rem auto;padding:0 1.5rem}
+.home-header{text-align:center;margin-bottom:2.5rem}
+.home-title{font-family:"Libre Baskerville",serif;font-size:1.6rem;font-weight:700;color:#1a365d;line-height:1.25}
+.home-sub{font-size:0.85rem;color:var(--gray);margin-top:0.5rem}
+.home-divider{width:50px;height:3px;background:var(--gl);margin:1rem auto}
+.menu-list{display:flex;flex-direction:column;gap:1rem}
+.menu-item{background:var(--white);border-radius:10px;padding:1.4rem 1.6rem;display:flex;align-items:center;gap:1.2rem;cursor:pointer;box-shadow:var(--shadow);border:2px solid transparent;transition:all 0.22s}
+.menu-item:hover{border-color:var(--gb);transform:translateX(6px);box-shadow:0 6px 24px rgba(49,130,206,0.15)}
+.menu-num{width:44px;height:44px;border-radius:50%;background:var(--gp);border:2px solid var(--gb);display:flex;align-items:center;justify-content:center;font-family:"Libre Baskerville",serif;font-size:1.1rem;font-weight:700;color:#1a365d;flex-shrink:0}
+.menu-title{font-family:"Libre Baskerville",serif;font-size:1.05rem;font-weight:700;color:var(--gd)}
+.menu-desc{font-size:0.81rem;color:var(--gray);margin-top:0.2rem;font-weight:300}
+.menu-arrow{margin-left:auto;font-size:1.3rem;color:var(--gb);flex-shrink:0}
+.page-wrap{max-width:1000px;margin:2rem auto;padding:0 1.5rem}
+.page-top{display:flex;align-items:center;gap:1rem;margin-bottom:1.5rem}
+.back-btn{background:var(--white);color:#1a365d;border:1.5px solid #bee3f8;padding:0.45rem 1.1rem;border-radius:6px;font-size:0.83rem;font-weight:600;cursor:pointer;transition:all 0.2s}
+.back-btn:hover{background:var(--gp)}
+.page-title{font-family:"Libre Baskerville",serif;font-size:1.3rem;font-weight:700;color:var(--gd)}
+.card{background:var(--white);border-radius:8px;box-shadow:var(--shadow);overflow:hidden;margin-bottom:1.5rem}
+.card-head{background:linear-gradient(90deg,#1a365d,#2b6cb0);color:#fff;padding:1rem 1.5rem;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:0.5rem}
+.card-head h2{font-family:"Libre Baskerville",serif;font-size:1rem;font-weight:700}
+.card-head p{font-size:0.75rem;opacity:0.75}
+.card-body{padding:1.5rem}
+.form-row{display:grid;grid-template-columns:1fr 1fr;gap:1rem}
+.fg{margin-bottom:1.1rem}
+.fg label{display:block;font-size:0.73rem;font-weight:600;letter-spacing:0.08em;text-transform:uppercase;color:#1a365d;margin-bottom:0.35rem}
+.fg input,.fg select,.fg textarea{width:100%;padding:0.65rem 0.9rem;border:1.5px solid #bee3f8;border-radius:5px;font-family:"Source Sans 3",sans-serif;font-size:0.9rem;color:var(--text);background:#f7faff;outline:none;transition:border-color 0.2s}
+.fg input:focus,.fg select:focus,.fg textarea:focus{border-color:#4299e1;background:#fff}
+.fg input.err{border-color:#c0392b}
+.fg textarea{resize:vertical;min-height:60px}
+.fg select{cursor:pointer}
+.btn{padding:0.6rem 1.4rem;font-family:"Source Sans 3",sans-serif;font-size:0.86rem;font-weight:600;border-radius:5px;border:none;cursor:pointer;transition:all 0.2s}
+.btn-p{background:linear-gradient(90deg,#1a365d,#2b6cb0);color:#fff} .btn-p:hover{background:var(--gm)}
+.btn-o{background:#fff;color:#1a365d;border:1.5px solid var(--gd)} .btn-o:hover{background:var(--gp)}
+.btn-d{background:#fff;color:#c0392b;border:1.5px solid #c0392b} .btn-d:hover{background:#fdecea}
+.del-restricted{display:none!important}.is-admin .del-restricted{display:inline-flex!important}.admin-only{display:none!important}.is-admin .admin-only{display:flex!important}
+.btn-sm{padding:0.3rem 0.8rem;font-size:0.78rem}
+.btn-row{display:flex;gap:0.75rem;margin-top:0.5rem;flex-wrap:wrap}
+.toast-ov{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.45);z-index:200;align-items:center;justify-content:center}
+.toast-ov.show{display:flex}
+.toast-box{background:#fff;border-radius:12px;padding:2rem 2.5rem;text-align:center;max-width:380px;width:90%;box-shadow:0 12px 40px rgba(0,0,0,0.25);animation:popIn 0.25s ease}
+@keyframes popIn{from{transform:scale(0.85);opacity:0}to{transform:scale(1);opacity:1}}
+.toast-icon{font-size:2.8rem;margin-bottom:1rem}
+.toast-title{font-family:"Libre Baskerville",serif;font-size:1.1rem;font-weight:700;color:#1a365d;margin-bottom:0.5rem}
+.toast-msg{font-size:0.88rem;color:var(--gray);line-height:1.6;margin-bottom:1.5rem;white-space:pre-line}
+.toast-btn{padding:0.65rem 2rem;background:linear-gradient(90deg,#1a365d,#2b6cb0);color:#fff;border:none;border-radius:6px;font-family:"Source Sans 3",sans-serif;font-size:0.9rem;font-weight:600;cursor:pointer;transition:background 0.2s}
+.toast-btn:hover{background:var(--gm)}
+.agent-two-col{display:grid;grid-template-columns:1fr 1fr;gap:1.5rem;align-items:start}
+.agent-item{display:flex;align-items:center;gap:0.75rem;padding:0.7rem 0.9rem;border:1px solid #bee3f8;border-radius:7px;background:#f7faff;transition:background 0.12s;margin-bottom:0.5rem}
+.agent-item:hover{background:#ebf8ff}
+.a-num{width:28px;height:28px;border-radius:50%;background:linear-gradient(90deg,#1a365d,#2b6cb0);color:#fff;display:flex;align-items:center;justify-content:center;font-size:0.75rem;font-weight:700;flex-shrink:0}
+.a-info{flex:1;min-width:0}
+.a-name{font-size:0.9rem;font-weight:600;color:#1a365d;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.a-meta{font-size:0.74rem;color:var(--gray);margin-top:0.1rem;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.a-acts{display:flex;gap:0.3rem;flex-shrink:0}
+.edit-banner{background:#fff8e1;border:1.5px solid #f0b429;border-radius:6px;padding:0.5rem 0.9rem;font-size:0.81rem;color:#7d5a00;margin-bottom:1rem;display:none}
+.edit-banner.show{display:block}
+.empty-st{text-align:center;padding:2rem;color:var(--gray);font-size:0.86rem;font-style:italic}
+.cert-ph{text-align:center;padding:1.1rem 2rem 0.8rem;background:linear-gradient(90deg,#1a365d,#2b6cb0);color:#fff}
+.cert-org{font-family:"Libre Baskerville",serif;font-size:1.1rem;font-weight:700;letter-spacing:0.03em;text-transform:uppercase;line-height:1.2}
+.cert-dept{font-size:0.76rem;opacity:0.8;font-style:italic;margin-top:0.2rem}
+.cert-contact{font-size:0.68rem;opacity:0.65;margin-top:0.2rem}
+.cert-tb{background:linear-gradient(90deg,#2b6cb0,#4299e1,#2b6cb0);text-align:center;padding:0.4rem;font-family:"Libre Baskerville",serif;font-size:0.88rem;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:#fff}
+.meta-grid{display:grid;grid-template-columns:1fr 1fr;gap:0;border:1.5px solid #bee3f8;border-radius:4px;overflow:hidden;margin-bottom:1.2rem}
+.mc{padding:0.48rem 0.9rem;border-bottom:1px solid #bee3f8;border-right:1px solid #bee3f8;display:flex;align-items:center;gap:0.5rem;background:#f7faff}
+.mc:nth-child(even){border-right:none}
+.mc:last-child,.mc:nth-last-child(2){border-bottom:none}
+.mc-full{grid-column:1/-1;border-right:none;flex-wrap:wrap;gap:0.4rem}
+.ml{font-size:0.69rem;font-weight:600;letter-spacing:0.07em;text-transform:uppercase;color:#2b6cb0;white-space:nowrap;min-width:88px}
+.mi{flex:1;border:none;background:transparent;font-family:"Source Sans 3",sans-serif;font-size:0.87rem;color:var(--text);outline:none;border-bottom:1.5px dashed #b0cebb;padding:0.08rem 0.15rem;transition:border-color 0.2s;min-width:60px}
+.mi:focus{border-bottom-color:var(--gm)}
+.ms{flex:1;border:none;background:transparent;font-family:"Source Sans 3",sans-serif;font-size:0.87rem;color:var(--text);outline:none;border-bottom:1.5px dashed #b0cebb;cursor:pointer;padding:0.08rem 0}
+.ms:focus{border-bottom-color:var(--gm)}
+.tbl-wrap{border:1.5px solid #bee3f8;border-radius:4px;overflow:hidden;margin-bottom:1.2rem}
+.mt{width:100%;border-collapse:collapse}
+.mt thead tr{background:linear-gradient(90deg,#1a365d,#2b6cb0);color:#fff}
+.mt thead th{padding:0.48rem 0.3rem;font-size:0.67rem;font-weight:600;letter-spacing:0.06em;text-transform:uppercase;text-align:center;border-right:1px solid rgba(255,255,255,0.15)}
+.mt thead th:last-child{border-right:none}
+.th-s{font-size:0.59rem;font-weight:400;opacity:0.8;display:block}
+.mt tbody tr{border-bottom:1px solid #bee3f8;transition:background 0.1s}
+.mt tbody tr:nth-child(even){background:#f7faff}
+.mt tbody tr:hover{background:#ebf8ff}
+.mt tbody tr:last-child{border-bottom:none}
+.mt tbody td{padding:0.2rem 0.28rem;text-align:center;border-right:1px solid #bee3f8}
+.mt tbody td:last-child{border-right:none}
+.sno{font-size:0.78rem;font-weight:700;color:var(--gd)}
+.ti{width:100%;border:none;background:transparent;text-align:center;font-family:"Source Sans 3",sans-serif;font-size:0.83rem;color:var(--text);padding:0.18rem;outline:none;border-bottom:1.5px dashed transparent;transition:border-color 0.2s}
+.ti:focus{border-bottom-color:var(--gm);background:#fff;border-radius:2px}
+.tcbm{font-weight:700;color:#1a365d;font-size:0.85rem}
+.rm-btn{background:none;border:none;cursor:pointer;color:#c0392b;font-size:0.9rem;padding:0.18rem 0.38rem;border-radius:3px;transition:background 0.12s}
+.rm-btn:hover{background:#fdecea}
+.tbl-foot{display:flex;align-items:center;justify-content:space-between;padding:0.55rem 0.8rem;background:linear-gradient(135deg,#ebf8ff,#bee3f8);border-top:2px solid #4299e1}
+.gcl{font-size:0.76rem;font-weight:600;color:#1a365d;letter-spacing:0.06em;text-transform:uppercase}
+.gcv{font-family:"Libre Baskerville",serif;font-size:1.05rem;font-weight:700;color:var(--gd)}
+.sig-block{display:grid;grid-template-columns:1fr 1fr 1fr;gap:2rem;padding-top:1rem;border-top:1.5px dashed #b0cebb;margin-bottom:0.8rem}
+.sig-line{border-bottom:1.5px solid #2b6cb0;height:28px;margin-bottom:0.28rem}
+.sig-lbl{font-size:0.69rem;font-weight:600;letter-spacing:0.07em;text-transform:uppercase;color:var(--gray);text-align:center}
+.disclaimer{font-size:0.67rem;color:var(--gray);text-align:center;font-style:italic;padding-top:0.55rem;border-top:1px solid #bee3f8}
+.cert-acts{display:flex;gap:0.75rem;justify-content:flex-end;padding:1rem 1.5rem;border-top:1px solid #ebf8ff;flex-wrap:wrap}
+.s-bar{display:flex;gap:0.75rem;margin-bottom:1rem;flex-wrap:wrap}
+.s-inp{flex:1;min-width:180px;padding:0.65rem 1rem;border:1.5px solid #bee3f8;border-radius:5px;font-family:"Source Sans 3",sans-serif;font-size:0.9rem;background:#f7faff;outline:none;transition:border-color 0.2s}
+.s-inp:focus{border-color:#4299e1;background:#fff}
+.s-info{font-size:0.79rem;color:var(--gray);margin-bottom:0.7rem}
+.stbl-wrap{border:1.5px solid #bee3f8;border-radius:6px;overflow:hidden;overflow-x:auto}
+.stbl{width:100%;border-collapse:collapse;font-size:0.83rem}
+.stbl thead tr{background:linear-gradient(90deg,#1a365d,#2b6cb0);color:#fff}
+.stbl thead th{padding:0.52rem 0.75rem;text-align:left;font-size:0.69rem;letter-spacing:0.06em;text-transform:uppercase;border-right:1px solid rgba(255,255,255,0.15);white-space:nowrap}
+.stbl thead th:last-child{border-right:none}
+.stbl tbody tr{border-bottom:1px solid #bee3f8;cursor:pointer;transition:background 0.12s}
+.stbl tbody tr:hover{background:#ebf8ff}
+.stbl tbody tr:last-child{border-bottom:none}
+.stbl tbody td{padding:0.48rem 0.75rem;border-right:1px solid #bee3f8}
+.stbl tbody td:last-child{border-right:none}
+.sno-badge{display:inline-flex;align-items:center;justify-content:center;width:26px;height:26px;border-radius:50%;background:linear-gradient(90deg,#1a365d,#2b6cb0);color:#fff;font-size:0.74rem;font-weight:700}
+.cbadge{display:inline-block;padding:0.14rem 0.5rem;border-radius:20px;font-size:0.71rem;font-weight:600;background:#ebf8ff;color:#1a365d}
+.modal-ov{display:none;position:fixed;inset:0;background:rgba(26,54,93,0.45);z-index:100;overflow-y:auto;padding:2rem;align-items:flex-start;justify-content:center}
+.modal-ov.open{display:flex}
+.modal-box{background:#fff;border-radius:8px;max-width:860px;width:100%;box-shadow:0 8px 40px rgba(0,0,0,0.25)}
+.modal-acts{display:flex;gap:0.75rem;justify-content:flex-end;padding:1rem 1.5rem;background:#f5f5f5;border-top:1px solid #ddd;border-radius:0 0 8px 8px}
+@media(max-width:680px){
+  .agent-two-col,.form-row{grid-template-columns:1fr}
+  .meta-grid{grid-template-columns:1fr}
+  .mc:nth-child(even){border-right:none}
+  .sig-block{grid-template-columns:1fr;gap:0.8rem}
+}
+@page {
+  margin: 0 !important;
+  size: A4;
+}
+@media print {
+  html, body {
+    margin: 0 !important;
+    padding: 0 !important;
+  }
+}
+@media print{
+  #screen-login,nav,.back-btn,.btn-row,.cert-acts,.rm-btn,.s-bar,.page-top,.modal-acts,.card-head .btn-sm,#view-home,#view-agent,#view-search,#cert-modal{display:none!important}
+  body{background:#fff!important;margin:0!important}
+  .card{box-shadow:none!important}
+  .cert-ph{border-radius:0}
+}
+</style>
+</head>
+<body>
+
+<div id="screen-login" class="screen">
+  <div class="login-box">
+    <div class="login-logo">&#128674;</div>
+    <div class="login-org">The Madras Homeward Freight<br/>Conference Society</div>
+    <div class="login-sub">(Measuring Department) &#8212; Port of Chennai</div>
+    <div class="login-divider"></div>
+    <div class="lf-group">
+      <label>Username</label>
+      <input type="text" id="l-user" placeholder="Enter username" onkeydown="if(event.key==='Enter')doLogin()"/>
+    </div>
+    <div class="lf-group">
+      <label>Password</label>
+      <input type="password" id="l-pass" placeholder="Enter password" onkeydown="if(event.key==='Enter')doLogin()"/>
+    </div>
+    <button class="login-btn" onclick="doLogin()">Login</button>
+    <div class="login-err" id="login-err"></div>
+  </div>
+</div>
+
+<div id="screen-app" class="screen">
+  <nav class="navbar">
+    <span class="nav-brand" onclick="goHome()">&#128674; MHFCS</span>
+    <div class="nav-right">
+      <span class="nav-user" id="nav-user"></span><span id="role-badge" style="display:none;background:#c0392b;color:#fff;font-size:0.7rem;font-weight:700;padding:0.2rem 0.6rem;border-radius:20px;letter-spacing:0.05em">SUPER ADMIN</span>
+      <button class="nav-logout" onclick="doLogout()">Logout</button>
+    </div>
+  </nav>
+
+  <!-- HOME -->
+  <div id="view-home">
+    <div class="home-wrap">
+      <div class="home-header">
+        <div class="home-title">Madras Homeward Freight<br/>Conference Society</div>
+        <div class="home-sub">Measuring Department &#8212; Licensed Measurers in the Port of Chennai</div>
+        <div class="home-divider"></div>
+      </div>
+      <div class="menu-list">
+        <div class="menu-item" onclick="showView('agent')">
+          <div class="menu-num">1</div>
+          <div>
+            <div class="menu-title">Agent</div>
+            <div class="menu-desc">Add and manage agent details &#8212; name, C&amp;F agent, vessel</div>
+          </div>
+          <span class="menu-arrow">&#8250;</span>
+        </div>
+        <div class="menu-item" onclick="showView('cert')">
+          <div class="menu-num">2</div>
+          <div>
+            <div class="menu-title">Certificate Entry</div>
+            <div class="menu-desc">Create new measurement certificates with auto-filled agent details</div>
+          </div>
+          <span class="menu-arrow">&#8250;</span>
+        </div>
+        <div class="menu-item" onclick="showView('search')">
+          <div class="menu-num">3</div>
+          <div>
+            <div class="menu-title">Search</div>
+            <div class="menu-desc">Search and print saved certificates by agent, vessel, cargo or C.No</div>
+          </div>
+          <span class="menu-arrow">&#8250;</span>
+        </div>
+        <div class="menu-item admin-only" onclick="showView('users')" style="border-color:#c0392b">
+          <div class="menu-num" style="background:#c0392b;border-color:#c0392b;color:#fff">4</div>
+          <div>
+            <div class="menu-title" style="color:#c0392b">User Management</div>
+            <div class="menu-desc">Add, edit or delete user accounts (Super Admin only)</div>
+          </div>
+          <span class="menu-arrow" style="color:#c0392b">&#8250;</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- AGENT -->
+  <div id="view-agent" style="display:none">
+    <div class="page-wrap">
+      <div class="page-top">
+        <button class="back-btn" onclick="goHome()">&#8592; Back to Home</button>
+        <span class="page-title">Agent Master</span>
+      </div>
+      <div class="agent-two-col">
+        <div class="card">
+          <div class="card-head"><h2 id="a-form-title">Add New Agent</h2></div>
+          <div class="card-body">
+            <div class="edit-banner" id="a-edit-banner">&#9998; Editing agent &#8212; click Save to update</div>
+            <input type="hidden" id="a-edit-id"/>
+            <div class="fg"><label>Agent Name *</label><input type="text" id="a-name" placeholder="e.g. BSE Logistics"/></div>
+            <div class="fg"><label>C &amp; F Agent</label><input type="text" id="a-cf" placeholder="e.g. S.F. Logistics"/></div>
+            <div class="fg"><label>Name of Vessel</label><input type="text" id="a-vessel" placeholder="e.g. Tiger Bridge (V-1)"/></div>
+            <div class="btn-row">
+              <button class="btn btn-p" onclick="saveAgent()">&#128190; Save Agent</button>
+              <button class="btn btn-o" onclick="clearAgentForm()">&#10005; Clear</button>
+            </div>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-head"><div><h2>Saved Agents</h2><p id="a-count">Loading&#8230;</p></div></div>
+          <div class="card-body" style="padding:1rem"><div id="a-list"><div class="empty-st">Loading&#8230;</div></div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- CERTIFICATE -->
+  <div id="view-cert" style="display:none">
+    <div class="page-wrap">
+      <div class="page-top">
+        <button class="back-btn" onclick="goHome()">&#8592; Back to Home</button>
+        <span class="page-title">Certificate Entry</span>
+      </div>
+      <div class="card">
+        <div class="cert-ph">
+          <div class="cert-org">The Madras Homeward Freight Conference Society</div>
+          <div class="cert-dept">(Measuring Department) &#8212; Licensed Measurers in the Port of Chennai</div>
+          <div class="cert-contact">Phone: 25360087 / 25391523 &nbsp;|&nbsp; Fax: 25391523</div>
+        </div>
+        <div class="cert-tb">Certificate Measurement</div>
+        <div class="card-body" style="padding:1.4rem">
+          <div class="meta-grid">
+            <div class="mc"><span class="ml">Agent</span><select class="ms" id="c-agent" onchange="onAgentSel(this)"><option value="">&#8212; Select Agent &#8212;</option></select></div>
+            <div class="mc"><span class="ml">C.No.</span><input class="mi" id="c-cno" type="text" placeholder="e.g. 1043"/></div>
+            <div class="mc"><span class="ml">Name of Vessel</span><input class="mi" id="c-vessel" type="text" placeholder="Auto-filled"/></div>
+            <div class="mc"><span class="ml">Slip No.</span><input class="mi" id="c-slip" type="text" placeholder="e.g. 9357"/></div>
+            <div class="mc"><span class="ml">C &amp; F Agent</span><input class="mi" id="c-cf" type="text" placeholder="Auto-filled"/></div>
+            <div class="mc"><span class="ml">Date</span><input class="mi" id="c-date" type="date"/></div>
+            <div class="mc mc-full">
+              <span class="ml">Cargo</span>
+              <input class="mi" id="c-cargo" type="text" placeholder="e.g. Finished Leather" style="max-width:230px"/>
+              <span class="ml" style="min-width:unset;margin-left:0.8rem">Showing for:</span>
+              <input class="mi" id="c-bundles" type="text" placeholder="e.g. 60 Bundles" style="max-width:140px"/>
+            </div>
+          </div>
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:0.5rem">
+            <span style="font-size:0.71rem;font-weight:600;letter-spacing:0.08em;text-transform:uppercase;color:var(--gd)">Measurement Entries</span>
+            <button class="btn btn-o btn-sm" onclick="addRow()">+ Add Row</button>
+          </div>
+          <div class="tbl-wrap">
+            <table class="mt">
+              <thead><tr>
+                <th style="width:36px">S.No</th>
+                <th style="width:85px">Marks</th>
+                <th style="width:62px">Number</th>
+                <th>Length<span class="th-s">M CM</span></th>
+                <th>Breadth<span class="th-s">M CM</span></th>
+                <th>Depth<span class="th-s">M CM</span></th>
+                <th style="width:88px">Total CBM</th>
+                <th>Remarks</th>
+                <th style="width:30px"></th>
+              </tr></thead>
+              <tbody id="c-tbody"></tbody>
+            </table>
+            <div class="tbl-foot">
+              <span class="gcl">Grand Total CBM</span>
+              <span class="gcv" id="grand-cbm">0.000</span>
+            </div>
+          </div>
+          <div class="fg" style="margin-bottom:1.1rem"><label>General Remarks</label><textarea id="c-remarks" placeholder="Any additional notes&#8230;"></textarea></div>
+          <div class="sig-block">
+            <div><div class="sig-line"></div><div class="sig-lbl">Measured By</div></div>
+            <div><div class="sig-line"></div><div class="sig-lbl">Prepared By</div></div>
+            <div><div class="sig-line"></div><div class="sig-lbl">Superintendent</div></div>
+          </div>
+          <div class="disclaimer">The conference accepts no responsibility for mistakes or inaccuracies in measurement or weighments. &#8212; Chennai</div>
+        </div>
+        <div class="cert-acts">
+          <button class="btn btn-d" onclick="clearCertForm()">&#128465; Clear</button>
+          <button class="btn btn-o" onclick="window.print()">&#128424; Print</button>
+          <button class="btn btn-p" onclick="saveCert()">&#128190; Save Certificate</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SEARCH -->
+  <div id="view-search" style="display:none">
+    <div class="page-wrap">
+      <div class="page-top">
+        <button class="back-btn" onclick="goHome()">&#8592; Back to Home</button>
+        <span class="page-title">Search Certificates</span>
+      </div>
+      <div class="card">
+        <div class="card-head">
+          <div><h2>Certificate Records</h2><p>Click any row to view full certificate</p></div>
+          <button class="btn btn-o btn-sm" style="background:rgba(255,255,255,0.15);color:#fff;border-color:rgba(255,255,255,0.3)" onclick="printList()">&#128424; Print List</button>
+        </div>
+        <div class="card-body">
+          <div class="s-bar">
+            <input class="s-inp" id="s-q" type="text" placeholder="Search by agent, vessel, C.No, cargo&#8230;" oninput="sDebounce()" onkeydown="if(event.key==='Enter')doSearch()"/>
+            <button class="btn btn-p" onclick="doSearch()">Search</button>
+            <button class="btn btn-o" onclick="loadSearch()">Show All</button>
+          </div>
+          <div class="s-info" id="s-info"></div>
+          <div class="stbl-wrap">
+            <table class="stbl">
+              <thead><tr>
+                <th>S.No</th><th>C.No.</th><th>Date</th><th>Agent</th>
+                <th>Vessel</th><th>C&amp;F Agent</th><th>Cargo</th>
+                <th>Bundles</th><th>Grand CBM</th><th>Action</th>
+              </tr></thead>
+              <tbody id="s-tbody"><tr><td colspan="10" class="empty-st">Loading&#8230;</td></tr></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <!-- USERS -->
+  <div id="view-users" style="display:none">
+    <div class="page-wrap">
+      <div class="page-top">
+        <button class="back-btn" onclick="goHome()">&#8592; Back to Home</button>
+        <span class="page-title">&#128274; User Management</span>
+      </div>
+
+      <!-- ADD / EDIT FORM -->
+      <div class="card" style="margin-bottom:1.5rem">
+        <div class="card-head">
+          <div><h2 id="u-form-title">Add New User</h2><p id="u-form-sub">Fill in details and click Save</p></div>
+        </div>
+        <div class="card-body">
+          <div class="edit-banner" id="u-edit-banner">&#9998; Editing user &#8212; leave password blank to keep existing</div>
+          <input type="hidden" id="u-edit-id"/>
+          <div class="form-row">
+            <div class="fg">
+              <label>Username *</label>
+              <input type="text" id="u-username" placeholder="e.g. john_doe" autocomplete="off"/>
+            </div>
+            <div class="fg">
+              <label>Password *</label>
+              <input type="password" id="u-password" placeholder="Enter password" autocomplete="new-password"/>
+            </div>
+          </div>
+          <div class="fg" style="max-width:320px">
+            <label>Permission Level *</label>
+            <select id="u-role">
+              <option value="user">Normal User &#8212; Add, Edit, Print only</option>
+              <option value="superadmin">Super Admin &#8212; Full access + Delete + Users</option>
+            </select>
+          </div>
+          <div class="btn-row">
+            <button class="btn btn-p" onclick="saveUser()">&#128190; Save User</button>
+            <button class="btn btn-o" onclick="clearUserForm()">&#10005; Clear</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- USER LIST -->
+      <div class="card">
+        <div class="card-head">
+          <div><h2>All Users</h2><p id="u-count">Loading&#8230;</p></div>
+          <button class="btn btn-o btn-sm" style="background:rgba(255,255,255,0.15);color:#fff;border-color:rgba(255,255,255,0.3)" onclick="loadUsers()">&#8635; Refresh</button>
+        </div>
+        <div class="card-body" style="padding:0">
+          <table style="width:100%;border-collapse:collapse;font-size:0.85rem">
+            <thead>
+              <tr style="background:var(--gp)">
+                <th style="padding:0.6rem 1rem;text-align:left;font-size:0.72rem;letter-spacing:0.06em;text-transform:uppercase;color:#1a365d;border-bottom:1.5px solid var(--gb);width:36px">#</th>
+                <th style="padding:0.6rem 1rem;text-align:left;font-size:0.72rem;letter-spacing:0.06em;text-transform:uppercase;color:#1a365d;border-bottom:1.5px solid var(--gb)">Username</th>
+                <th style="padding:0.6rem 1rem;text-align:left;font-size:0.72rem;letter-spacing:0.06em;text-transform:uppercase;color:#1a365d;border-bottom:1.5px solid var(--gb)">Password</th>
+                <th style="padding:0.6rem 1rem;text-align:left;font-size:0.72rem;letter-spacing:0.06em;text-transform:uppercase;color:#1a365d;border-bottom:1.5px solid var(--gb)">Permission</th>
+                <th style="padding:0.6rem 1rem;text-align:left;font-size:0.72rem;letter-spacing:0.06em;text-transform:uppercase;color:#1a365d;border-bottom:1.5px solid var(--gb)">Added On</th>
+                <th style="padding:0.6rem 1rem;text-align:center;font-size:0.72rem;letter-spacing:0.06em;text-transform:uppercase;color:#1a365d;border-bottom:1.5px solid var(--gb)">Actions</th>
+              </tr>
+            </thead>
+            <tbody id="u-tbody">
+              <tr><td colspan="6" class="empty-st" style="padding:2rem">Loading&#8230;</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+
+
+<!-- TOAST -->
+<div class="toast-ov" id="toast-ov">
+  <div class="toast-box">
+    <div class="toast-icon" id="t-icon">✅</div>
+    <div class="toast-title" id="t-title" style="display:none"></div>
+    <div class="toast-msg" id="t-msg"></div>
+    <button class="toast-btn" id="t-btn" onclick="closeToast()">OK</button>
+  </div>
+</div>
+
+<!-- CERT MODAL -->
+<div class="modal-ov" id="c-modal">
+  <div class="modal-box">
+    <div id="c-modal-content"></div>
+    <div class="modal-acts">
+      <button class="btn btn-d btn-sm del-restricted" id="m-del-btn">&#128465; Delete</button>
+      <button class="btn btn-o btn-sm" onclick="closeModal()">&#10005; Close</button>
+      <button class="btn btn-p btn-sm" onclick="window.print()">&#128424; Print</button>
+    </div>
+  </div>
+</div>
+
+<div id="plist" style="display:none"></div>
+
+<script>
+const API = 'http://' + window.location.hostname + ':4000';
+let rowCount=0,agentsList=[],sTimer,toastCB=null,currentRole="user";
+
+async function doLogin(){
+  const u=document.getElementById("l-user").value.trim();
+  const p=document.getElementById("l-pass").value;
+  const e=document.getElementById("login-err");
+  e.textContent="";
+  if(!u||!p){e.textContent="Please enter username and password.";return}
+  try{
+    const r=await fetch(API+"/api/login",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({username:u,password:p})});
+    const d=await r.json();
+    if(r.ok&&d.success){
+      currentRole=d.role||"user";
+      const roleLabel=currentRole==="superadmin"?" (Super Admin)":"";
+      document.getElementById("nav-user").textContent="Welcome, "+u+roleLabel;
+      document.getElementById("screen-login").classList.remove("active");
+      document.getElementById("screen-app").classList.add("active");
+      applyRole();
+      goHome();
+    }else{e.textContent=d.message||"Invalid credentials.";document.getElementById("l-pass").value="";}
+  }catch(ex){e.textContent="Cannot connect to server. Make sure cert-server.js is running. Open cmd → cd C:\mhfcs → node cert-server.js";}
+}
+
+function doLogout(){
+  currentRole="user";
+  document.body.classList.remove("is-admin");
+  document.getElementById("screen-app").classList.remove("active");
+  document.getElementById("screen-login").classList.add("active");
+  document.getElementById("l-user").value="";
+  document.getElementById("l-pass").value="";
+  document.getElementById("login-err").textContent="";
+}
+
+function applyRole(){
+  const isAdmin=currentRole==="superadmin";
+  // Toggle body class - CSS handles showing/hiding all .del-restricted buttons
+  document.body.classList.toggle("is-admin", isAdmin);
+  // Show superadmin badge in nav if admin
+  const badge=document.getElementById("role-badge");
+  if(badge){
+    badge.style.display=isAdmin?"inline-block":"none";
+  }
+}
+
+function showView(v){
+  ["home","agent","cert","search","users"].forEach(n=>{
+    document.getElementById("view-"+n).style.display=n===v?"block":"none";
+  });
+  if(v==="agent"){clearAgentForm();loadAgents();}
+  if(v==="users"){clearUserForm();loadUsers();}
+  if(v==="cert"){clearCertForm();loadAgentsForCert();}
+  if(v==="search"){loadSearch();}
+  window.scrollTo(0,0);
+}
+
+function goHome(){
+  ["agent","cert","search","users"].forEach(n=>document.getElementById("view-"+n).style.display="none");
+  document.getElementById("view-home").style.display="block";
+  window.scrollTo(0,0);
+}
+
+function showToast(icon,title,msg,btn,cb){
+  document.getElementById("t-icon").textContent=icon;
+  const titleEl=document.getElementById("t-title");
+  titleEl.textContent=title;
+  titleEl.style.display=title?"block":"none";
+  document.getElementById("t-msg").textContent=msg;
+  document.getElementById("t-btn").textContent=btn||"OK";
+  toastCB=cb||null;
+  document.getElementById("toast-ov").classList.add("show");
+}
+function closeToast(){
+  document.getElementById("toast-ov").classList.remove("show");
+  if(toastCB){toastCB();toastCB=null;}
+}
+
+async function loadAgents(){
+  try{
+    const r=await fetch(API+"/api/agents");
+    agentsList=await r.json();
+    document.getElementById("a-count").textContent=agentsList.length+" agent"+(agentsList.length!==1?"s":"")+" saved";
+    const list=document.getElementById("a-list");
+    if(!agentsList.length){list.innerHTML='<div class="empty-st">No agents yet. Add one using the form.</div>';return;}
+    list.innerHTML=agentsList.map((a,i)=>`
+      <div class="agent-item" id="ai-${a.id}">
+        <div class="a-num">${i+1}</div>
+        <div class="a-info">
+          <div class="a-name">${x(a.agent_name)}</div>
+          <div class="a-meta">${a.cf_agent?"&#127970; "+x(a.cf_agent):""}${a.cf_agent&&a.vessel?" | ":""}${a.vessel?"&#128674; "+x(a.vessel):""}</div>
+        </div>
+        <div class="a-acts">
+          <button class="btn btn-o btn-sm" onclick="editAgent(${a.id})">&#9998;</button>
+          <button class="btn btn-d btn-sm del-restricted" onclick="deleteAgent(${a.id})">&#128465; Delete</button>
+        </div>
+      </div>
+    `).join("");
+  applyRole();
+  }catch(e){document.getElementById("a-list").innerHTML='<div class="empty-st">Cannot connect to server.</div>';}
+}
+
+async function saveAgent(){
+  const eid=document.getElementById("a-edit-id").value;
+  const name=document.getElementById("a-name").value.trim();
+  const cf=document.getElementById("a-cf").value.trim();
+  const vessel=document.getElementById("a-vessel").value.trim();
+  if(!name){document.getElementById("a-name").classList.add("err");showToast("⚠️","Required","Please enter Agent Name.","OK");return;}
+  document.getElementById("a-name").classList.remove("err");
+  try{
+    const isEdit=!!eid;
+    const r=await fetch(isEdit?API+"/api/agents/"+eid:API+"/api/agents",{
+      method:isEdit?"PUT":"POST",headers:{"Content-Type":"application/json"},
+      body:JSON.stringify({agent_name:name,cf_agent:cf,vessel})
+    });
+    const d=await r.json();
+    if(r.ok){
+      showToast("✅","",
+        '"'+name+'" has been successfully '+(isEdit?"updated.":"added."),
+        "OK",()=>{clearAgentForm();loadAgents();}
+      );
+    }else{showToast("❌","Error",d.error||"Save failed.","OK");}
+  }catch(e){showToast("❌","Error","Cannot connect to server.","OK");}
+}
+
+async function editAgent(id){
+  try{
+    const r=await fetch(API+"/api/agents/"+id);
+    const d=await r.json();
+    document.getElementById("a-edit-id").value=id;
+    document.getElementById("a-name").value=d.agent_name||"";
+    document.getElementById("a-cf").value=d.cf_agent||"";
+    document.getElementById("a-vessel").value=d.vessel||"";
+    document.getElementById("a-form-title").textContent="Edit Agent";
+    document.getElementById("a-edit-banner").classList.add("show");
+    window.scrollTo({top:0,behavior:"smooth"});
+  }catch(e){showToast("❌","Error","Could not load agent.","OK");}
+}
+
+async function deleteAgent(id){
+  if(!confirm("Delete this agent permanently?"))return;
+  try{await fetch(API+"/api/agents/"+id,{method:"DELETE"});loadAgents();}
+  catch(e){showToast("❌","Error","Delete failed.","OK");}
+}
+
+function clearAgentForm(){
+  document.getElementById("a-edit-id").value="";
+  ["a-name","a-cf","a-vessel"].forEach(id=>{const e=document.getElementById(id);e.value="";e.classList.remove("err");});
+  document.getElementById("a-form-title").textContent="Add New Agent";
+  document.getElementById("a-edit-banner").classList.remove("show");
+}
+
+async function loadAgentsForCert(){
+  try{
+    const r=await fetch(API+"/api/agents");
+    agentsList=await r.json();
+    const sel=document.getElementById("c-agent");
+    sel.innerHTML='<option value="">&#8212; Select Agent &#8212;</option>';
+    agentsList.forEach(a=>{
+      const o=new Option(a.agent_name,a.id);
+      o.dataset.cf=a.cf_agent||"";o.dataset.vessel=a.vessel||"";
+      sel.appendChild(o);
+    });
+  }catch(e){}
+}
+
+function onAgentSel(sel){
+  const o=sel.options[sel.selectedIndex];
+  document.getElementById("c-cf").value=o.dataset.cf||"";
+  document.getElementById("c-vessel").value=o.dataset.vessel||"";
+}
+
+function addRow(data={}){
+  rowCount++;
+  const n=rowCount;
+  const tr=document.createElement("tr");
+  tr.id="r-"+n;
+  tr.innerHTML=`
+    <td class="sno">${document.querySelectorAll("#c-tbody tr").length+1}</td>
+    <td><input class="ti" type="text" placeholder="Mark" value="${x(data.marks||"")}"/></td>
+    <td><input class="ti" type="number" placeholder="0" value="${data.number||""}" min="0"/></td>
+    <td><input class="ti meas" type="number" placeholder="0.00" step="0.01" value="${data.length_m||""}" oninput="calcRow(this)"/></td>
+    <td><input class="ti meas" type="number" placeholder="0.00" step="0.01" value="${data.breadth_m||""}" oninput="calcRow(this)"/></td>
+    <td><input class="ti meas" type="number" placeholder="0.00" step="0.01" value="${data.depth_m||""}" oninput="calcRow(this)"/></td>
+    <td class="tcbm" id="cbm-${n}">${data.total_cbm?parseFloat(data.total_cbm).toFixed(3):"&#8212;"}</td>
+    <td><input class="ti" type="text" placeholder="Remarks" value="${x(data.row_remarks||"")}"/></td>
+    <td><button class="rm-btn" onclick="removeRow('r-${n}')">&#10005;</button></td>
+  `;
+  document.getElementById("c-tbody").appendChild(tr);
+  renum();recalc();
+}
+
+function removeRow(id){document.getElementById(id)?.remove();renum();recalc();}
+
+function renum(){
+  document.querySelectorAll("#c-tbody tr").forEach((tr,i)=>{tr.querySelector(".sno").textContent=i+1;});
+}
+
+function calcRow(inp){
+  const tr=inp.closest("tr");
+  const m=tr.querySelectorAll(".meas");
+  const cbm=(parseFloat(m[0].value)||0)*(parseFloat(m[1].value)||0)*(parseFloat(m[2].value)||0);
+  const n=tr.id.replace("r-","");
+  document.getElementById("cbm-"+n).textContent=cbm>0?cbm.toFixed(3):"&#8212;";
+  recalc();
+}
+
+function recalc(){
+  let t=0;
+  document.querySelectorAll("[id^='cbm-']").forEach(el=>{const v=parseFloat(el.textContent);if(!isNaN(v))t+=v;});
+  document.getElementById("grand-cbm").textContent=t.toFixed(3);
+}
+
+function getRows(){
+  return[...document.querySelectorAll("#c-tbody tr")].map(tr=>{
+    const inp=tr.querySelectorAll("input");
+    const l=parseFloat(inp[2]?.value)||null,b=parseFloat(inp[3]?.value)||null,d=parseFloat(inp[4]?.value)||null;
+    return{marks:inp[0]?.value.trim()||null,number:inp[1]?.value.trim()||null,
+      length_m:l,breadth_m:b,depth_m:d,total_cbm:(l&&b&&d)?l*b*d:null,
+      row_remarks:inp[5]?.value.trim()||null};
+  });
+}
+
+async function saveCert(){
+  const sel=document.getElementById("c-agent");
+  const agent_name=sel.value?sel.options[sel.selectedIndex].text:"";
+  if(!agent_name){showToast("⚠️","Required","Please select an Agent.","OK");return;}
+  const payload={
+    c_no:document.getElementById("c-cno").value.trim(),
+    agent_name,
+    cf_agent:document.getElementById("c-cf").value.trim(),
+    vessel:document.getElementById("c-vessel").value.trim(),
+    slip_no:document.getElementById("c-slip").value.trim(),
+    cert_date:document.getElementById("c-date").value,
+    cargo:document.getElementById("c-cargo").value.trim(),
+    bundles:document.getElementById("c-bundles").value.trim(),
+    remarks:document.getElementById("c-remarks").value.trim(),
+    grand_cbm:parseFloat(document.getElementById("grand-cbm").textContent)||0,
+    rows:getRows()
+  };
+  try{
+    const r=await fetch(API+"/api/certificates",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(payload)});
+    const d=await r.json();
+    if(r.ok){
+      showToast("✅","",
+        '"'+agent_name+'" Certificate has been successfully added.',
+        "Back to Home",()=>goHome());
+    }else{showToast("❌","Error",d.error||"Save failed.","OK");}
+  }catch(e){showToast("❌","Error","Cannot connect to server.","OK");}
+}
+
+function clearCertForm(){
+  document.getElementById("c-agent").value="";
+  document.getElementById("c-cf").value="";
+  document.getElementById("c-vessel").value="";
+  ["c-cno","c-slip","c-cargo","c-bundles","c-remarks"].forEach(id=>document.getElementById(id).value="");
+  document.getElementById("c-date").value=new Date().toISOString().split("T")[0];
+  document.getElementById("c-tbody").innerHTML="";
+  document.getElementById("grand-cbm").textContent="0.000";
+  rowCount=0;
+  for(let i=0;i<10;i++)addRow();
+}
+
+async function loadSearch(){
+  try{
+    const r=await fetch(API+"/api/certificates");
+    renderSearch(await r.json());
+  }catch(e){document.getElementById("s-tbody").innerHTML='<tr><td colspan="10" class="empty-st">Cannot connect to server.</td></tr>';}
+}
+
+let sTimer2;
+function sDebounce(){clearTimeout(sTimer2);sTimer2=setTimeout(doSearch,280);}
+
+async function doSearch(){
+  const q=document.getElementById("s-q").value.trim();
+  if(!q){loadSearch();return;}
+  try{const r=await fetch(API+"/api/search?q="+encodeURIComponent(q));renderSearch(await r.json());}catch(e){}
+}
+
+function renderSearch(data){
+  document.getElementById("s-info").textContent=data.length?"Showing "+data.length+" record"+(data.length!==1?"s":""):"";
+  const tb=document.getElementById("s-tbody");
+  if(!data.length){tb.innerHTML='<tr><td colspan="10" class="empty-st">No records found.</td></tr>';return;}
+  tb.innerHTML=data.map((r,i)=>`
+    <tr onclick="viewCert(${r.id})">
+      <td><span class="sno-badge">${i+1}</span></td>
+      <td><span class="cbadge">${x(r.c_no||"&#8212;")}</span></td>
+      <td>${r.cert_date||"&#8212;"}</td>
+      <td><strong>${x(r.agent||r.agent_name||"&#8212;")}</strong></td>
+      <td>${x(r.vessel||"&#8212;")}</td>
+      <td>${x(r.cf_agent||"&#8212;")}</td>
+      <td>${x(r.cargo||"&#8212;")}</td>
+      <td>${x(r.bundles||"&#8212;")}</td>
+      <td><strong>${parseFloat(r.grand_cbm||0).toFixed(3)}</strong></td>
+      <td onclick="event.stopPropagation()">
+        <div style="display:flex;gap:0.3rem">
+          <button class="btn btn-o btn-sm" onclick="viewCert(${r.id})">&#128196;</button>
+          <button class="btn btn-d btn-sm del-restricted" onclick="delCert(${r.id})">&#128465; Delete</button>
+        </div>
+      </td>
+    </tr>
+  `).join("");
+  applyRole();
+}
+
+async function viewCert(id){
+  try{
+    const r=await fetch(API+"/api/certificates/"+id);
+    const{cert,rows}=await r.json();
+    let g=0;rows.forEach(r=>{if(r.total_cbm)g+=parseFloat(r.total_cbm);});
+    const rh=rows.length?rows.map((r,i)=>`
+      <tr>
+        <td class="sno">${i+1}</td>
+        <td>${x(r.marks||"")}</td><td>${r.number||""}</td>
+        <td>${r.length_m!=null?parseFloat(r.length_m).toFixed(2):""}</td>
+        <td>${r.breadth_m!=null?parseFloat(r.breadth_m).toFixed(2):""}</td>
+        <td>${r.depth_m!=null?parseFloat(r.depth_m).toFixed(2):""}</td>
+        <td><strong>${r.total_cbm!=null?parseFloat(r.total_cbm).toFixed(3):"&#8212;"}</strong></td>
+        <td>${x(r.row_remarks||r.remarks||"")}</td>
+      </tr>`).join(""):'<tr><td colspan="8" class="empty-st">No rows</td></tr>';
+    document.getElementById("c-modal-content").innerHTML=`
+      <div class="cert-ph" style="border-radius:8px 8px 0 0">
+        <div class="cert-org">The Madras Homeward Freight Conference Society</div>
+        <div class="cert-dept">(Measuring Department) &#8212; Licensed Measurers in the Port of Chennai</div>
+        <div class="cert-contact">Phone: 25360087 / 25391523 &nbsp;|&nbsp; Fax: 25391523</div>
+      </div>
+      <div class="cert-tb">Certificate Measurement</div>
+      <div style="padding:1.1rem 1.4rem">
+        <div class="meta-grid">
+          <div class="mc"><span class="ml">Agent</span><span style="font-size:0.87rem;font-weight:600;color:var(--gd)">${x(cert.agent||cert.agent_name||"&#8212;")}</span></div>
+          <div class="mc"><span class="ml">C.No.</span><span style="font-size:0.87rem">${x(cert.c_no||"&#8212;")}</span></div>
+          <div class="mc"><span class="ml">Name of Vessel</span><span style="font-size:0.87rem">${x(cert.vessel||"&#8212;")}</span></div>
+          <div class="mc"><span class="ml">Slip No.</span><span style="font-size:0.87rem">${x(cert.slip_no||"&#8212;")}</span></div>
+          <div class="mc"><span class="ml">C &amp; F Agent</span><span style="font-size:0.87rem">${x(cert.cf_agent||"&#8212;")}</span></div>
+          <div class="mc"><span class="ml">Date</span><span style="font-size:0.87rem">${cert.cert_date||"&#8212;"}</span></div>
+          <div class="mc mc-full">
+            <span class="ml">Cargo</span><span style="font-size:0.87rem">${x(cert.cargo||"&#8212;")}</span>
+            <span class="ml" style="min-width:unset;margin-left:1rem">Showing for:</span>
+            <span style="font-size:0.87rem">${x(cert.bundles||"&#8212;")}</span>
+          </div>
+        </div>
+        <div class="tbl-wrap">
+          <table class="mt">
+            <thead><tr>
+              <th>S.No</th><th>Marks</th><th>Number</th>
+              <th>Length(M)</th><th>Breadth(M)</th><th>Depth(M)</th>
+              <th>Total CBM</th><th>Remarks</th>
+            </tr></thead>
+            <tbody>${rh}</tbody>
+          </table>
+          <div class="tbl-foot"><span class="gcl">Grand Total CBM</span><span class="gcv">${g.toFixed(3)}</span></div>
+        </div>
+        ${cert.remarks?`<p style="font-size:0.82rem;color:var(--gray);margin-bottom:1rem"><strong>Remarks:</strong> ${x(cert.remarks)}</p>`:""}
+        <div class="sig-block">
+          <div><div class="sig-line"></div><div class="sig-lbl">Measured By</div></div>
+          <div><div class="sig-line"></div><div class="sig-lbl">Prepared By</div></div>
+          <div><div class="sig-line"></div><div class="sig-lbl">Superintendent</div></div>
+        </div>
+        <div class="disclaimer">The conference accepts no responsibility for mistakes or inaccuracies in measurement or weighments. &#8212; Chennai</div>
+      </div>
+    `;
+    document.getElementById("m-del-btn").onclick=()=>delCert(id,true);
+    document.getElementById("c-modal").classList.add("open");
+    document.body.style.overflow="hidden";
+    applyRole();
+  }catch(e){showToast("❌","Error","Could not load certificate.","OK");}
+}
+
+function closeModal(){
+  document.getElementById("c-modal").classList.remove("open");
+  document.body.style.overflow="";
+}
+
+async function delCert(id,fromModal=false){
+  if(!confirm("Delete this certificate permanently?"))return;
+  try{
+    await fetch(API+"/api/certificates/"+id,{method:"DELETE"});
+    if(fromModal)closeModal();
+    loadSearch();
+  }catch(e){showToast("❌","Error","Delete failed.","OK");}
+}
+
+function printList(){
+  const rows=[...document.querySelectorAll("#s-tbody tr")];
+  if(!rows.length||rows[0].querySelector(".empty-st")){showToast("⚠️","No Data","No records to print.","OK");return;}
+  const h=["S.No","C.No","Date","Agent","Vessel","C&F Agent","Cargo","Bundles","Grand CBM"];
+  const trs=[...document.querySelectorAll("#s-tbody tr")].map(tr=>[...tr.querySelectorAll("td")].slice(0,9).map(td=>td.textContent.trim()));
+  const area=document.getElementById("plist");
+  area.innerHTML=`<div style="padding:1.5rem;font-family:sans-serif">
+    <div style="text-align:center;margin-bottom:1.5rem">
+      <div style="font-size:1.25rem;font-weight:700;text-transform:uppercase">The Madras Homeward Freight Conference Society</div>
+      <div style="font-size:0.8rem;margin-top:0.25rem">(Measuring Department) &#8212; Certificate Register</div>
+      <div style="font-size:0.72rem;color:#888;margin-top:0.1rem">Printed: ${new Date().toLocaleString()}</div>
+    </div>
+    <table style="width:100%;border-collapse:collapse;font-size:0.8rem">
+      <thead><tr style="background:#1a365d;color:#fff">${h.map(hh=>`<th style="padding:0.45rem 0.6rem;border:1px solid rgba(255,255,255,0.2);text-align:left">${hh}</th>`).join("")}</tr></thead>
+      <tbody>${trs.map((r,i)=>`<tr style="background:${i%2===0?"#f7faff":"#fff"}">${r.map(c=>`<td style="padding:0.38rem 0.6rem;border:1px solid #bee3f8">${c}</td>`).join("")}</tr>`).join("")}</tbody>
+    </table>
+    <div style="margin-top:0.6rem;font-size:0.72rem;color:#888;text-align:right">Total: ${trs.length} records</div>
+  </div>`;
+  area.style.display="block";
+  window.print();
+  setTimeout(()=>{area.style.display="none";},1000);
+}
+
+
+// ════════════════════════════════════════════════════════════
+// USER MANAGEMENT
+// ════════════════════════════════════════════════════════════
+
+async function loadUsers(){
+  try{
+    const r=await fetch(API+"/api/users");
+    const data=await r.json();
+    const cnt=document.getElementById("u-count");
+    if(cnt) cnt.textContent=data.length+" user"+(data.length!==1?"s":"");
+    const tbody=document.getElementById("u-tbody");
+    if(!tbody) return;
+    if(!data.length){
+      tbody.innerHTML='<tr><td colspan="6" class="empty-st" style="padding:2rem">No users found.</td></tr>';
+      return;
+    }
+    tbody.innerHTML=data.map((u,i)=>`
+      <tr style="border-bottom:1px solid #bee3f8;transition:background 0.12s" onmouseover="this.style.background='var(--gp)'" onmouseout="this.style.background=''">
+        <td style="padding:0.55rem 1rem;font-weight:700;color:var(--gd)">${i+1}</td>
+        <td style="padding:0.55rem 1rem;font-weight:600">${x(u.username)}</td>
+        <td style="padding:0.55rem 1rem;font-family:monospace;letter-spacing:0.05em;color:var(--gray)">
+          <span id="pw-mask-${u.id}">&#9679;&#9679;&#9679;&#9679;&#9679;&#9679;&#9679;&#9679;</span>
+          <span id="pw-show-${u.id}" style="display:none">${x(u.password||"")}</span>
+          <button onclick="togglePw(${u.id})" style="background:none;border:none;cursor:pointer;font-size:0.75rem;color:var(--gm);margin-left:0.4rem" title="Show/Hide">&#128065;</button>
+        </td>
+        <td style="padding:0.55rem 1rem">
+          <span style="display:inline-block;padding:0.2rem 0.7rem;border-radius:20px;font-size:0.72rem;font-weight:600;background:${u.role==="superadmin"?"#fdecea":"var(--gp)"};color:${u.role==="superadmin"?"#c0392b":"var(--gd)"}">
+            ${u.role==="superadmin"?"&#128274; Super Admin":"&#128100; Normal User"}
+          </span>
+        </td>
+        <td style="padding:0.55rem 1rem;color:var(--gray);font-size:0.82rem">${u.created_at?u.created_at.split(" ")[0]:"&#8212;"}</td>
+        <td style="padding:0.55rem 1rem;text-align:center">
+          <div style="display:flex;gap:0.4rem;justify-content:center">
+            <button class="btn btn-o btn-sm" onclick="editUser(${u.id})">&#9998; Edit</button>
+            <button class="btn btn-o btn-sm" onclick="resetPassword(${u.id},'${x(u.username)}')">&#128274; Reset</button>
+            ${u.username!=="administrator"?`<button class="btn btn-d btn-sm" onclick="deleteUser(${u.id})">&#128465;</button>`:"&#128274;"}
+          </div>
+        </td>
+      </tr>
+    `).join("");
+  }catch(e){
+    const tbody=document.getElementById("u-tbody");
+    if(tbody) tbody.innerHTML='<tr><td colspan="6" class="empty-st" style="padding:2rem">&#9888; Cannot connect to server.</td></tr>';
+  }
+}
+
+function togglePw(id){
+  const mask=document.getElementById("pw-mask-"+id);
+  const show=document.getElementById("pw-show-"+id);
+  if(!mask||!show) return;
+  const visible=show.style.display!=="none";
+  mask.style.display=visible?"":"none";
+  show.style.display=visible?"none":"";
+}
+
+function resetPassword(id, username){
+  const newPass=prompt("Enter new password for \""+username+"\":");
+  if(!newPass||!newPass.trim()){return;}
+  fetch(API+"/api/users/"+id,{
+    method:"PUT",headers:{"Content-Type":"application/json"},
+    body:JSON.stringify({username,password:newPass.trim()})
+  }).then(r=>r.json()).then(d=>{
+    if(d.success){showToast("✅","",'Password for "'+username+'" has been reset successfully.',"OK",()=>loadUsers());}
+    else{showToast("❌","",d.error||"Reset failed.","OK");}
+  }).catch(()=>showToast("❌","","Cannot connect to server.","OK"));
+}
+
+async function saveUser(){
+  const eid=document.getElementById("u-edit-id").value;
+  const username=document.getElementById("u-username").value.trim();
+  const password=document.getElementById("u-password").value;
+  const role=document.getElementById("u-role").value;
+  if(!username){showToast("⚠️","","Please enter a Username.","OK");return;}
+  if(!eid && !password){showToast("⚠️","","Please enter a Password for new user.","OK");return;}
+  try{
+    const isEdit=!!eid;
+    const r=await fetch(isEdit?API+"/api/users/"+eid:API+"/api/users",{
+      method:isEdit?"PUT":"POST",
+      headers:{"Content-Type":"application/json"},
+      body:JSON.stringify({username,password,role})
+    });
+    const d=await r.json();
+    if(r.ok){
+      showToast("✅","",'"'+ username+'" has been successfully '+(isEdit?"updated.":"added."),"OK",()=>{clearUserForm();loadUsers();});
+    }else{
+      showToast("❌","",d.error||"Save failed.","OK");
+    }
+  }catch(e){showToast("❌","","Cannot connect to server.","OK");}
+}
+
+async function editUser(id){
+  try{
+    const r=await fetch(API+"/api/users");
+    const data=await r.json();
+    const u=data.find(x=>x.id===id);
+    if(!u)return;
+    document.getElementById("u-edit-id").value=id;
+    document.getElementById("u-username").value=u.username||"";
+    document.getElementById("u-password").value="";
+    document.getElementById("u-role").value=u.role||"user";
+    document.getElementById("u-form-title").textContent="Edit User";
+    document.getElementById("u-edit-banner").classList.add("show");
+    document.getElementById("u-pass-hint").style.display="inline";
+    window.scrollTo({top:0,behavior:"smooth"});
+  }catch(e){showToast("❌","","Could not load user.","OK");}
+}
+
+async function deleteUser(id){
+  if(!confirm("Delete this user permanently?"))return;
+  try{
+    const r=await fetch(API+"/api/users/"+id,{method:"DELETE"});
+    const d=await r.json();
+    if(r.ok){loadUsers();}
+    else{showToast("❌","",d.error||"Delete failed.","OK");}
+  }catch(e){showToast("❌","","Delete failed.","OK");}
+}
+
+function clearUserForm(){
+  document.getElementById("u-edit-id").value="";
+  document.getElementById("u-username").value="";
+  document.getElementById("u-password").value="";
+  document.getElementById("u-role").value="user";
+  document.getElementById("u-form-title").textContent="Add New User";
+  document.getElementById("u-edit-banner").classList.remove("show");
+}
+
+function x(s){return String(s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");}
+
+document.getElementById("c-modal").addEventListener("click",function(e){if(e.target===this)closeModal();});
+
+document.addEventListener("DOMContentLoaded",()=>{
+  document.getElementById("screen-login").classList.add("active");
+});
+</script>
+</body>
+</html>
