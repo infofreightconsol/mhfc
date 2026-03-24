@@ -1,15 +1,16 @@
 // ============================================================
 //  MHFCS Certificate System — Express + sql.js
-//  Run: node cert-server.js  →  http://localhost:3000
+//  Run: node cert-server.js  →  http://localhost:PORT
 // ============================================================
 const express   = require('express');
 const cors      = require('cors');
 const path      = require('path');
 const fs        = require('fs');
 const initSqlJs = require('sql.js');
+const os        = require('os');
 
 const app     = express();
-const PORT    = 4000;
+const PORT    = process.env.PORT || 4000;  // Use Render's assigned port or 4000 locally
 const DB_FILE = path.join(__dirname, 'mhfcs.db');
 
 app.use(cors({
@@ -19,8 +20,11 @@ app.use(cors({
 }));
 app.options('*', cors());
 app.use(express.json());
-app.use(express.static(path.join(__dirname, 'public')));
 
+// Serve all your static frontend files (HTML, CSS, JS) from current directory
+app.use(express.static(__dirname));
+
+// DB and utility functions (no change here)
 let db;
 
 async function initDB() {
@@ -105,12 +109,10 @@ app.post('/api/login', (req,res) => {
   const user = queryOne('SELECT * FROM users WHERE username=? AND password=?', [username, password]);
   if (user) {
     res.json({ success: true, role: user.role, message: 'Login successful' });
-  } else if (false) { // legacy fallback disabled
   } else {
     res.status(401).json({ success: false, message: 'Invalid username or password' });
   }
 });
-
 
 // ── USER MANAGEMENT (superadmin only) ────────────────────────
 app.get('/api/users', (req,res) => {
@@ -138,7 +140,6 @@ app.put('/api/users/:id', (req,res) => {
   if (!username) return res.status(400).json({error:'Username is required.'});
   const u = queryOne('SELECT * FROM users WHERE id=?',[req.params.id]);
   if (!u) return res.status(404).json({error:'User not found.'});
-  // Protect administrator account username from being changed
   if (u.username === 'administrator' && username !== 'administrator')
     return res.status(403).json({error:'Cannot change administrator username.'});
   const newPass = password && password.trim() ? password : u.password;
@@ -235,35 +236,32 @@ app.get('/api/search', (req,res) => {
   ));
 });
 
-initDB().then(() => {
-  app.listen(PORT, '0.0.0.0', () => {
-  const os = require('os');
-  const nets = os.networkInterfaces();
-  let localIP = 'YOUR-PC-IP';
-  for (const name of Object.keys(nets)) {
-    for (const net of nets[name]) {
-      if (net.family === 'IPv4' && !net.internal) {
-        localIP = net.address;
-      }
-    }
-  }
-   app.get('/', (req, res) => {
+// Serve index.html at root
+app.get('/', (req, res) => {
   res.sendFile(path.join(__dirname, 'index.html'));
 });
-    app.get('/', (req, res) => {
-  res.sendFile(path.join(__dirname, 'public', 'index.html'));
-});
-    const path = require('path');
 
-// Serve all HTML/CSS/JS files
+// Make sure to serve all other static files correctly
 app.use(express.static(__dirname));
 
-
-    
-  console.log('\n🚢 MHFCS Certificate System is RUNNING\n');
-  console.log('  Local (this PC)  →  http://localhost:' + PORT);
-  console.log('  Network (others) →  http://' + localIP + ':' + PORT);
-  console.log('\n  Share this address with other laptops on same WiFi:');
-  console.log('  👉  http://' + localIP + ':' + PORT + '\n');
-});
+// Initialize DB and start server
+initDB().then(() => {
+  app.listen(PORT, '0.0.0.0', () => {
+    // Get local IP for logs
+    const nets = os.networkInterfaces();
+    let localIP = 'YOUR-PC-IP';
+    for (const name of Object.keys(nets)) {
+      for (const net of nets[name]) {
+        if (net.family === 'IPv4' && !net.internal) {
+          localIP = net.address;
+        }
+      }
+    }
+    console.log('\n🚢 MHFCS Certificate System is RUNNING\n');
+    console.log('  Local (this PC)  →  http://localhost:' + PORT);
+    console.log('  Network (others) →  http://' + localIP + ':' + PORT);
+    console.log('\n  Share this address with other laptops on same WiFi:');
+    console.log('  👉  http://' + localIP + ':' + PORT + '\n');
+    console.log('  Available at your primary URL https://mhfc.onrender.com\n');
+  });
 });
