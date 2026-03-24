@@ -38,7 +38,9 @@ async function migrate() {
       return [];
     }
   }
-
+app.get('/', (req, res) => {
+  res.send('MHFC Server is running successfully 🚀');
+});
   // ── Helper: add column if missing ────────────────────────
   function addColIfMissing(table, col, type, defaultVal) {
     const cols = getColumns(table);
