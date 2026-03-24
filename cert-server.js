@@ -247,6 +247,9 @@ initDB().then(() => {
       }
     }
   }
+    app.get('/', (req, res) => {
+  res.send('MHFC Server is running successfully 🚀');
+});
   console.log('\n🚢 MHFCS Certificate System is RUNNING\n');
   console.log('  Local (this PC)  →  http://localhost:' + PORT);
   console.log('  Network (others) →  http://' + localIP + ':' + PORT);
