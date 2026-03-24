@@ -250,10 +250,9 @@ initDB().then(() => {
     app.get('/', (req, res) => {
   res.send('MHFC Server is running successfully 🚀');
 });
-    const path = require('path');
-
-// Serve static files (HTML, CSS, JS)
-app.use(express.static(path.join(__dirname, 'public')));
+    app.get('/', (req, res) => {
+  res.sendFile(path.join(__dirname, 'public', 'index.html'));
+});
     
   console.log('\n🚢 MHFCS Certificate System is RUNNING\n');
   console.log('  Local (this PC)  →  http://localhost:' + PORT);
