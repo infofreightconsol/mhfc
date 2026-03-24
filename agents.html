@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+  <title>Agent Master — MHFCS</title>
+  <link href="https://fonts.googleapis.com/css2?family=Libre+Baskerville:wght@400;700&family=Source+Sans+3:wght@300;400;500;600&display=swap" rel="stylesheet"/>
+  <style>
+    :root{--gd:#1a365d;--gm:#2b6cb0;--gl:#4299e1;--gp:#ebf8ff;--gb:#3182ce;--white:#fff;--cream:#f7faff;--text:#1a202c;--gray:#718096;--light:#f0f6ff;--shadow:0 2px 16px rgba(49,130,206,0.10)}
+    *,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
+    body{font-family:'Source Sans 3',sans-serif;background:#e8f0fc;min-height:100vh;padding:0 0 3rem}
+
+    /* NAV */
+    nav{background:linear-gradient(90deg,#1a365d,#2b6cb0);padding:0.9rem 5%;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:0.75rem}
+    .nav-brand{font-family:'Libre Baskerville',serif;font-size:1rem;font-weight:700;color:#fff;text-decoration:none}
+    .nav-links{display:flex;gap:0.5rem}
+    .nav-link{color:rgba(255,255,255,0.7);text-decoration:none;font-size:0.83rem;font-weight:500;padding:0.4rem 1rem;border-radius:4px;transition:all 0.2s}
+    .nav-link:hover,.nav-link.active{background:rgba(255,255,255,0.15);color:#fff}
+
+    /* PAGE */
+    .page{max-width:960px;margin:2rem auto;padding:0 1.5rem;display:grid;grid-template-columns:1fr 1fr;gap:2rem;align-items:start}
+    @media(max-width:700px){.page{grid-template-columns:1fr}}
+
+    /* CARD */
+    .card{background:var(--white);border-radius:8px;box-shadow:var(--shadow);overflow:hidden}
+    .card-head{background:linear-gradient(90deg,#1a365d,#2b6cb0);color:#fff;padding:1.2rem 1.5rem}
+    .card-head h2{font-family:'Libre Baskerville',serif;font-size:1.05rem;font-weight:700}
+    .card-head p{font-size:0.78rem;opacity:0.75;margin-top:0.2rem}
+    .card-body{padding:1.5rem}
+
+    /* FORM */
+    .form-group{margin-bottom:1.2rem}
+    .form-group label{display:block;font-size:0.75rem;font-weight:600;letter-spacing:0.08em;text-transform:uppercase;color:#1a365d;margin-bottom:0.4rem}
+    .form-group input{width:100%;padding:0.65rem 0.9rem;border:1.5px solid #bee3f8;border-radius:4px;font-family:'Source Sans 3',sans-serif;font-size:0.9rem;color:var(--text);background:#f7faff;outline:none;transition:border-color 0.2s}
+    .form-group input:focus{border-color:#4299e1;background:#fff}
+    .form-group input.required-err{border-color:#c0392b}
+
+    .btn{padding:0.6rem 1.5rem;font-family:'Source Sans 3',sans-serif;font-size:0.86rem;font-weight:600;border-radius:4px;border:none;cursor:pointer;transition:all 0.2s;letter-spacing:0.02em}
+    .btn-primary{background:linear-gradient(90deg,#1a365d,#2b6cb0);color:#fff} .btn-primary:hover{background:var(--gm)}
+    .btn-outline{background:#fff;color:#1a365d;border:1.5px solid #bee3f8} .btn-outline:hover{background:#ebf8ff}
+    .btn-danger{background:#fff;color:#c0392b;border:1.5px solid #c0392b} .btn-danger:hover{background:#fdecea}
+    .btn-sm{padding:0.3rem 0.8rem;font-size:0.78rem}
+    .btn-row{display:flex;gap:0.75rem;margin-top:0.5rem}
+
+    /* FEEDBACK */
+    .fb{display:none;padding:0.65rem 1rem;border-radius:4px;font-size:0.85rem;font-weight:500;margin-bottom:1rem}
+    .fb.ok{display:block;background:#d1fae5;color:#065f46}
+    .fb.err{display:block;background:#fee2e2;color:#991b1b}
+
+    /* LIST */
+    .agent-list{display:flex;flex-direction:column;gap:0.6rem;margin-top:0.5rem}
+    .agent-item{display:flex;align-items:center;justify-content:space-between;padding:0.75rem 1rem;border:1px solid #bee3f8;border-radius:6px;background:#f7faff;transition:background 0.15s}
+    .agent-item:hover{background:#ebf8ff}
+    .agent-info{flex:1}
+    .agent-name{font-size:0.92rem;font-weight:600;color:var(--gd)}
+    .agent-meta{font-size:0.78rem;color:var(--gray);margin-top:0.15rem}
+    .agent-actions{display:flex;gap:0.4rem;flex-shrink:0}
+    .empty{text-align:center;padding:2rem;color:var(--gray);font-size:0.88rem;font-style:italic}
+
+    /* EDIT MODE */
+    .edit-banner{background:#ebf8ff;border:1.5px solid #bee3f8;border-radius:6px;padding:0.6rem 1rem;font-size:0.82rem;color:#2b6cb0;margin-bottom:1rem;display:none}
+    .edit-banner.show{display:block}
+  </style>
+</head>
+<body>
+
+<nav>
+  <a class="nav-brand" href="index.html">🚢 MHFCS</a>
+  <div class="nav-links">
+    <a class="nav-link active" href="agents.html">👤 Agents</a>
+    <a class="nav-link" href="certificate.html">📋 Certificate</a>
+    <a class="nav-link" href="search.html">🔍 Search</a>
+  </div>
+</nav>
+
+<div class="page">
+
+  <!-- LEFT: Form -->
+  <div class="card">
+    <div class="card-head">
+      <h2 id="form-title">Add New Agent</h2>
+      <p id="form-subtitle">Enter agent details and click Save</p>
+    </div>
+    <div class="card-body">
+      <div class="edit-banner" id="edit-banner">✏️ Editing existing agent — click Save to update</div>
+      <div class="fb" id="fb"></div>
+
+      <input type="hidden" id="edit-id"/>
+
+      <div class="form-group">
+        <label>Agent Name *</label>
+        <input type="text" id="f-agent" placeholder="e.g. BSE Logistics"/>
+      </div>
+      <div class="form-group">
+        <label>C &amp; F Agent</label>
+        <input type="text" id="f-cfagent" placeholder="e.g. S.F. Logistics"/>
+      </div>
+      <div class="form-group">
+        <label>Name of Vessel</label>
+        <input type="text" id="f-vessel" placeholder="e.g. Tiger Bridge (V-1)"/>
+      </div>
+
+      <div class="btn-row">
+        <button class="btn btn-primary" onclick="saveAgent()">💾 Save Agent</button>
+        <button class="btn btn-outline" onclick="clearForm()">✕ Clear</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- RIGHT: Saved Agents -->
+  <div class="card">
+    <div class="card-head">
+      <h2>Saved Agents</h2>
+      <p id="agent-count">Loading…</p>
+    </div>
+    <div class="card-body" style="padding:1rem">
+      <div class="agent-list" id="agent-list">
+        <div class="empty">Loading agents…</div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+const API = 'http://' + window.location.hostname + ':4000';
+let editId = null;
+
+async function loadAgents() {
+  try {
+    const res  = await fetch(`${API}/api/agents`);
+    const data = await res.json();
+    document.getElementById('agent-count').textContent = `${data.length} agent${data.length !== 1 ? 's' : ''} saved`;
+
+    const list = document.getElementById('agent-list');
+    if (!data.length) {
+      list.innerHTML = '<div class="empty">No agents saved yet. Add one using the form.</div>';
+      return;
+    }
+    list.innerHTML = data.map(a => `
+      <div class="agent-item" id="ai-${a.id}">
+        <div class="agent-info">
+          <div class="agent-name">${a.agent_name}</div>
+          <div class="agent-meta">
+            ${a.cf_agent ? '🏢 ' + a.cf_agent : ''}
+            ${a.cf_agent && a.vessel ? ' &nbsp;|&nbsp; ' : ''}
+            ${a.vessel ? '🚢 ' + a.vessel : ''}
+          </div>
+        </div>
+        <div class="agent-actions">
+          <button class="btn btn-outline btn-sm" onclick="editAgent(${a.id})">✏️ Edit</button>
+          <button class="btn btn-danger btn-sm" onclick="deleteAgent(${a.id})">🗑</button>
+        </div>
+      </div>
+    `).join('');
+  } catch(e) {
+    document.getElementById('agent-list').innerHTML = '<div class="empty">⚠️ Cannot connect to server.</div>';
+  }
+}
+
+async function saveAgent() {
+  const agent_name = document.getElementById('f-agent').value.trim();
+  const cf_agent   = document.getElementById('f-cfagent').value.trim();
+  const vessel     = document.getElementById('f-vessel').value.trim();
+
+  if (!agent_name) {
+    document.getElementById('f-agent').classList.add('required-err');
+    showFb('Agent Name is required.', 'err'); return;
+  }
+  document.getElementById('f-agent').classList.remove('required-err');
+
+  try {
+    let res;
+    if (editId) {
+      res = await fetch(`${API}/api/agents/${editId}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ agent_name, cf_agent, vessel })
+      });
+    } else {
+      res = await fetch(`${API}/api/agents`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ agent_name, cf_agent, vessel })
+      });
+    }
+    const data = await res.json();
+    if (res.ok) {
+      showFb(editId ? '✅ Agent updated successfully!' : '✅ Agent saved successfully!', 'ok');
+      clearForm();
+      loadAgents();
+    } else {
+      showFb('❌ ' + (data.error || 'Save failed.'), 'err');
+    }
+  } catch(e) {
+    showFb('❌ Cannot connect to server.', 'err');
+  }
+}
+
+async function editAgent(id) {
+  try {
+    const res  = await fetch(`${API}/api/agents/${id}`);
+    const data = await res.json();
+    editId = id;
+    document.getElementById('f-agent').value   = data.agent_name || '';
+    document.getElementById('f-cfagent').value  = data.cf_agent || '';
+    document.getElementById('f-vessel').value   = data.vessel || '';
+    document.getElementById('form-title').textContent    = 'Edit Agent';
+    document.getElementById('form-subtitle').textContent = 'Update the details and click Save';
+    document.getElementById('edit-banner').classList.add('show');
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  } catch(e) {
+    alert('Could not load agent.');
+  }
+}
+
+async function deleteAgent(id) {
+  if (!confirm('Delete this agent permanently?')) return;
+  try {
+    await fetch(`${API}/api/agents/${id}`, { method: 'DELETE' });
+    loadAgents();
+  } catch(e) { alert('Delete failed.'); }
+}
+
+function clearForm() {
+  editId = null;
+  ['f-agent','f-cfagent','f-vessel'].forEach(id => {
+    document.getElementById(id).value = '';
+    document.getElementById(id).classList.remove('required-err');
+  });
+  document.getElementById('form-title').textContent    = 'Add New Agent';
+  document.getElementById('form-subtitle').textContent = 'Enter agent details and click Save';
+  document.getElementById('edit-banner').classList.remove('show');
+  document.getElementById('fb').className = 'fb';
+}
+
+function showFb(msg, type) {
+  const el = document.getElementById('fb');
+  el.textContent = msg;
+  el.className = 'fb ' + type;
+  setTimeout(() => el.className = 'fb', 5000);
+}
+
+loadAgents();
+</script>
+</body>
+</html>

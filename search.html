@@ -1,0 +1,405 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+  <title>Search & Print — MHFCS</title>
+  <link href="https://fonts.googleapis.com/css2?family=Libre+Baskerville:ital,wght@0,400;0,700&family=Source+Sans+3:wght@300;400;500;600&display=swap" rel="stylesheet"/>
+  <style>
+    :root{--gd:#1a365d;--gm:#2b6cb0;--gl:#4299e1;--gp:#ebf8ff;--gb:#3182ce;--white:#fff;--cream:#f7faff;--text:#1a202c;--gray:#718096;--shadow:0 2px 16px rgba(49,130,206,0.10)}
+    *,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
+    body{font-family:'Source Sans 3',sans-serif;background:#e8f0fc;min-height:100vh;padding-bottom:4rem}
+
+    nav{background:linear-gradient(90deg,#1a365d,#2b6cb0);padding:0.9rem 5%;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:0.75rem}
+    .nav-brand{font-family:'Libre Baskerville',serif;font-size:1rem;font-weight:700;color:#fff;text-decoration:none}
+    .nav-links{display:flex;gap:0.5rem}
+    .nav-link{color:rgba(255,255,255,0.7);text-decoration:none;font-size:0.83rem;font-weight:500;padding:0.4rem 1rem;border-radius:4px;transition:all 0.2s}
+    .nav-link:hover,.nav-link.active{background:rgba(255,255,255,0.15);color:#fff}
+
+    .page{max-width:1100px;margin:2rem auto;padding:0 1.5rem}
+
+    .card{background:var(--white);border-radius:8px;box-shadow:var(--shadow);overflow:hidden;margin-bottom:1.5rem}
+    .card-head{background:linear-gradient(90deg,#1a365d,#2b6cb0);color:#fff;padding:1.1rem 1.5rem;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:0.75rem}
+    .card-head h2{font-family:'Libre Baskerville',serif;font-size:1.05rem;font-weight:700}
+    .card-head p{font-size:0.78rem;opacity:0.75;margin-top:0.15rem}
+    .card-body{padding:1.5rem}
+
+    /* SEARCH BAR */
+    .search-bar{display:flex;gap:0.75rem;align-items:center;flex-wrap:wrap}
+    .search-input{flex:1;min-width:200px;padding:0.65rem 1rem;border:1.5px solid #bee3f8;border-radius:4px;font-family:'Source Sans 3',sans-serif;font-size:0.92rem;color:var(--text);background:#f7faff;outline:none;transition:border-color 0.2s}
+    .search-input:focus{border-color:#4299e1;background:#fff}
+    .btn{padding:0.6rem 1.4rem;font-family:'Source Sans 3',sans-serif;font-size:0.85rem;font-weight:600;border-radius:4px;border:none;cursor:pointer;transition:all 0.2s}
+    .btn-primary{background:linear-gradient(90deg,#1a365d,#2b6cb0);color:#fff} .btn-primary:hover{background:var(--gm)}
+    .btn-outline{background:#fff;color:#1a365d;border:1.5px solid #bee3f8} .btn-outline:hover{background:#ebf8ff}
+    .btn-danger{background:#fff;color:#c0392b;border:1.5px solid #c0392b} .btn-danger:hover{background:#fdecea}
+    .btn-sm{padding:0.32rem 0.8rem;font-size:0.78rem}
+    .btn-print-list{background:linear-gradient(90deg,#2b6cb0,#4299e1,#2b6cb0);color:#fff} .btn-print-list:hover{background:var(--gd)}
+
+    /* RESULTS TABLE */
+    .results-wrap{border:1.5px solid #bee3f8;border-radius:6px;overflow:hidden}
+    .results-table{width:100%;border-collapse:collapse;font-size:0.85rem}
+    .results-table thead tr{background:linear-gradient(90deg,#1a365d,#2b6cb0);color:#fff}
+    .results-table thead th{padding:0.6rem 0.9rem;text-align:left;font-size:0.75rem;letter-spacing:0.06em;text-transform:uppercase;border-right:1px solid rgba(255,255,255,0.15);white-space:nowrap}
+    .results-table thead th:last-child{border-right:none}
+    .results-table tbody tr{border-bottom:1px solid #bee3f8;transition:background 0.12s;cursor:pointer}
+    .results-table tbody tr:hover{background:#ebf8ff}
+    .results-table tbody tr:last-child{border-bottom:none}
+    .results-table tbody td{padding:0.55rem 0.9rem;border-right:1px solid #bee3f8}
+    .results-table tbody td:last-child{border-right:none}
+    .badge{display:inline-block;padding:0.18rem 0.6rem;border-radius:20px;font-size:0.72rem;font-weight:600;background:#ebf8ff;color:#1a365d}
+    .empty{text-align:center;padding:3rem;color:var(--gray);font-style:italic}
+    .result-count{font-size:0.82rem;color:var(--gray);padding:0.5rem 0 0.8rem}
+
+    /* DETAIL MODAL - prints as certificate */
+    .detail-overlay{display:none;position:fixed;inset:0;background:rgba(26,54,93,0.45);z-index:100;overflow-y:auto;padding:2rem}
+    .detail-overlay.open{display:flex;align-items:flex-start;justify-content:center}
+    .detail-box{background:var(--white);border-radius:8px;max-width:900px;width:100%;box-shadow:0 8px 40px rgba(0,0,0,0.3)}
+    .detail-actions{display:flex;gap:0.75rem;justify-content:flex-end;padding:1rem 1.5rem;background:#f9f9f9;border-top:1px solid #e0e0e0;border-radius:0 0 8px 8px}
+
+    /* CERT INSIDE MODAL */
+    .cert-header{background:linear-gradient(90deg,#1a365d,#2b6cb0);color:#fff;text-align:center;padding:1.2rem 2rem 1rem;border-radius:8px 8px 0 0}
+    .cert-org{font-family:'Libre Baskerville',serif;font-size:1.2rem;font-weight:700;letter-spacing:0.03em;text-transform:uppercase;line-height:1.2}
+    .cert-dept{font-size:0.8rem;opacity:0.8;font-style:italic;margin-top:0.2rem}
+    .cert-sub{font-size:0.72rem;opacity:0.7}
+    .cert-contact{font-size:0.68rem;opacity:0.65;margin-top:0.25rem}
+    .cert-title-bar{background:linear-gradient(90deg,#2b6cb0,#4299e1,#2b6cb0);text-align:center;padding:0.4rem;font-family:'Libre Baskerville',serif;font-size:0.95rem;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:#fff}
+    .cert-body{padding:1.5rem}
+
+    .meta-grid{display:grid;grid-template-columns:1fr 1fr;gap:0;border:1.5px solid #bee3f8;border-radius:4px;overflow:hidden;margin-bottom:1.2rem}
+    .meta-cell{padding:0.45rem 0.9rem;border-bottom:1px solid #bee3f8;border-right:1px solid #bee3f8;display:flex;align-items:center;gap:0.5rem;background:#f7faff}
+    .meta-cell:nth-child(even){border-right:none}
+    .meta-cell:last-child,.meta-cell:nth-last-child(2){border-bottom:none}
+    .meta-cargo{grid-column:1/-1;border-right:none;flex-wrap:wrap;gap:0.4rem}
+    .meta-label{font-size:0.7rem;font-weight:600;letter-spacing:0.07em;text-transform:uppercase;color:#2b6cb0;white-space:nowrap;min-width:90px}
+    .meta-val{font-size:0.88rem;color:var(--text);font-weight:500}
+
+    .meas-table-wrap{border:1.5px solid #bee3f8;border-radius:4px;overflow:hidden;margin-bottom:1.2rem}
+    .meas-table{width:100%;border-collapse:collapse;font-size:0.82rem}
+    .meas-table thead tr{background:linear-gradient(90deg,#1a365d,#2b6cb0);color:#fff}
+    .meas-table thead th{padding:0.45rem 0.35rem;font-size:0.68rem;font-weight:600;letter-spacing:0.06em;text-transform:uppercase;text-align:center;border-right:1px solid rgba(255,255,255,0.15)}
+    .meas-table thead th:last-child{border-right:none}
+    .meas-table tbody tr{border-bottom:1px solid #bee3f8}
+    .meas-table tbody tr:nth-child(even){background:#f7faff}
+    .meas-table tbody td{padding:0.3rem 0.4rem;text-align:center;border-right:1px solid #bee3f8}
+    .meas-table tbody td:last-child{border-right:none}
+
+    .totals-block{display:flex;justify-content:flex-end;margin-bottom:1.2rem}
+    .totals-inner{border:1.5px solid #bee3f8;border-radius:4px;overflow:hidden;min-width:260px}
+    .totals-row{display:flex;align-items:center;justify-content:space-between;padding:0.4rem 1rem;border-bottom:1px solid #bee3f8;font-size:0.82rem}
+    .totals-row:last-child{border-bottom:none;background:linear-gradient(90deg,#1a365d,#2b6cb0);color:#fff}
+    .totals-label{font-size:0.72rem;font-weight:600;text-transform:uppercase;letter-spacing:0.06em}
+    .totals-value{font-family:'Libre Baskerville',serif;font-size:0.95rem;font-weight:700;color:var(--gd)}
+    .totals-row:last-child .totals-value{color:#fff}
+
+    .sig-block{display:grid;grid-template-columns:1fr 1fr 1fr;gap:1.5rem;padding-top:1rem;border-top:1px dashed #b0cebb;margin-bottom:0.8rem}
+    .sig-line{border-bottom:1px solid var(--gd);height:28px;margin-bottom:0.3rem}
+    .sig-label{font-size:0.68rem;font-weight:600;letter-spacing:0.06em;text-transform:uppercase;color:var(--gray);text-align:center}
+    .disclaimer{font-size:0.67rem;color:var(--gray);text-align:center;font-style:italic;padding-top:0.6rem;border-top:1px solid #bee3f8}
+
+    /* PRINT LIST VIEW */
+    @media print{
+      nav,.detail-actions,.detail-overlay:not(.open),.card-head .btn-row,
+      .search-bar,.result-count,.btn,.btn-sm{display:none!important}
+      .detail-overlay{position:static!important;background:none!important;padding:0!important;display:block!important}
+      .detail-box{box-shadow:none!important;max-width:100%!important}
+      .print-list-section{display:block!important}
+      body{background:#fff}
+    }
+    .print-list-section{display:none}
+
+    @media(max-width:640px){
+      .meta-grid{grid-template-columns:1fr}
+      .meta-cell:nth-child(even){border-right:none}
+      .sig-block{grid-template-columns:1fr;gap:0.8rem}
+    }
+  </style>
+</head>
+<body>
+
+<nav>
+  <a class="nav-brand" href="index.html">🚢 MHFCS</a>
+  <div class="nav-links">
+    <a class="nav-link" href="agents.html">👤 Agents</a>
+    <a class="nav-link" href="certificate.html">📋 Certificate</a>
+    <a class="nav-link active" href="search.html">🔍 Search</a>
+  </div>
+</nav>
+
+<div class="page">
+
+  <!-- SEARCH CARD -->
+  <div class="card">
+    <div class="card-head">
+      <div>
+        <h2>Search Certificates</h2>
+        <p>Search by agent name, vessel, C.No or cargo</p>
+      </div>
+      <div style="display:flex;gap:0.5rem">
+        <button class="btn btn-print-list" onclick="printList()">🖨 Print List</button>
+        <button class="btn btn-outline" onclick="loadAll()">↻ Show All</button>
+      </div>
+    </div>
+    <div class="card-body">
+      <div class="search-bar">
+        <input class="search-input" id="q" type="text" placeholder="Type agent name, vessel, C.No, cargo…"
+          oninput="onSearch()" onkeydown="if(event.key==='Enter')doSearch()"/>
+        <button class="btn btn-primary" onclick="doSearch()">🔍 Search</button>
+      </div>
+      <div class="result-count" id="result-count"></div>
+      <div class="results-wrap">
+        <table class="results-table">
+          <thead>
+            <tr>
+              <th>C.No.</th>
+              <th>Date</th>
+              <th>Agent</th>
+              <th>Vessel</th>
+              <th>C&F Agent</th>
+              <th>Cargo</th>
+              <th>Bundles</th>
+              <th>Grand CBM</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody id="results-body">
+            <tr><td colspan="9" class="empty">Loading records…</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<!-- PRINT LIST (hidden, shows on print) -->
+<div class="print-list-section" id="print-list-section"></div>
+
+<!-- CERTIFICATE DETAIL OVERLAY -->
+<div class="detail-overlay" id="detail-overlay">
+  <div class="detail-box">
+    <div id="detail-content"></div>
+    <div class="detail-actions">
+      <button class="btn btn-danger btn-sm" id="detail-delete-btn">🗑 Delete</button>
+      <button class="btn btn-outline btn-sm" onclick="closeCert()">✕ Close</button>
+      <button class="btn btn-primary btn-sm" onclick="printCert()">🖨 Print</button>
+    </div>
+  </div>
+</div>
+
+<script>
+const API = 'http://' + window.location.hostname + ':4000';
+let allRecords = [];
+let currentCertId = null;
+let searchTimer;
+
+async function loadAll() {
+  try {
+    const res  = await fetch(`${API}/api/certificates`);
+    allRecords = await res.json();
+    renderTable(allRecords);
+  } catch(e) {
+    document.getElementById('results-body').innerHTML = '<tr><td colspan="9" class="empty">⚠️ Cannot connect to server.</td></tr>';
+  }
+}
+
+function onSearch() {
+  clearTimeout(searchTimer);
+  searchTimer = setTimeout(doSearch, 300);
+}
+
+async function doSearch() {
+  const q = document.getElementById('q').value.trim();
+  if (!q) { loadAll(); return; }
+  try {
+    const res  = await fetch(`${API}/api/search?q=${encodeURIComponent(q)}`);
+    const data = await res.json();
+    renderTable(data);
+  } catch(e) {}
+}
+
+function renderTable(data) {
+  const tbody = document.getElementById('results-body');
+  document.getElementById('result-count').textContent = data.length
+    ? `Showing ${data.length} record${data.length !== 1 ? 's' : ''}`
+    : '';
+
+  if (!data.length) {
+    tbody.innerHTML = '<tr><td colspan="9" class="empty">No records found.</td></tr>';
+    return;
+  }
+
+  tbody.innerHTML = data.map(r => `
+    <tr onclick="openCert(${r.id})">
+      <td><span class="badge">${r.c_no || '—'}</span></td>
+      <td>${r.cert_date || '—'}</td>
+      <td><strong>${r.agent_name || r.agent || '—'}</strong></td>
+      <td>${r.vessel || '—'}</td>
+      <td>${r.cf_agent || '—'}</td>
+      <td>${r.cargo || '—'}</td>
+      <td>${r.bundles || '—'}</td>
+      <td><strong>${parseFloat(r.grand_cbm||0).toFixed(3)}</strong></td>
+      <td onclick="event.stopPropagation()">
+        <div style="display:flex;gap:0.4rem">
+          <button class="btn btn-outline btn-sm" onclick="openCert(${r.id})">📄 View</button>
+          <button class="btn btn-danger btn-sm" onclick="deleteCert(${r.id})">🗑</button>
+        </div>
+      </td>
+    </tr>
+  `).join('');
+}
+
+async function openCert(id) {
+  try {
+    const res = await fetch(`${API}/api/certificates/${id}`);
+    const { cert, rows } = await res.json();
+    currentCertId = id;
+
+    // Compute totals
+    let grandCbm = 0;
+    rows.forEach(r => { if (r.total_cbm) grandCbm += parseFloat(r.total_cbm); });
+
+    const rowsHtml = rows.length
+      ? rows.map(r => `
+          <tr>
+            <td>${r.marks||''}</td>
+            <td>${r.number||''}</td>
+            <td>${r.length_m != null ? parseFloat(r.length_m).toFixed(2) : ''}</td>
+            <td>${r.breadth_m != null ? parseFloat(r.breadth_m).toFixed(2) : ''}</td>
+            <td>${r.depth_m != null ? parseFloat(r.depth_m).toFixed(2) : ''}</td>
+            <td><strong>${r.total_cbm != null ? parseFloat(r.total_cbm).toFixed(3) : '—'}</strong></td>
+            <td>${r.remarks||''}</td>
+          </tr>`).join('')
+      : '<tr><td colspan="7" style="text-align:center;padding:1rem;color:#888">No measurement rows</td></tr>';
+
+    document.getElementById('detail-content').innerHTML = `
+      <div class="cert-header">
+        <div class="cert-org">The Madras Homeward Freight Conference Society</div>
+        <div class="cert-dept">(Measuring Department)</div>
+        <div class="cert-sub">(Licensed Measurers in the Port of Chennai)</div>
+        <div class="cert-contact">Phone: 25360087 / 25391523 &nbsp;|&nbsp; Fax: 25391523</div>
+      </div>
+      <div class="cert-title-bar">Certificate Measurement</div>
+      <div class="cert-body">
+        <div class="meta-grid">
+          <div class="meta-cell"><span class="meta-label">Agent</span><span class="meta-val">${cert.agent_name||cert.agent||'—'}</span></div>
+          <div class="meta-cell"><span class="meta-label">C.No.</span><span class="meta-val">${cert.c_no||'—'}</span></div>
+          <div class="meta-cell"><span class="meta-label">Name of Vessel</span><span class="meta-val">${cert.vessel||'—'}</span></div>
+          <div class="meta-cell"><span class="meta-label">Slip No.</span><span class="meta-val">${cert.slip_no||'—'}</span></div>
+          <div class="meta-cell"><span class="meta-label">C &amp; F Agent</span><span class="meta-val">${cert.cf_agent||'—'}</span></div>
+          <div class="meta-cell"><span class="meta-label">Date</span><span class="meta-val">${cert.cert_date||'—'}</span></div>
+          <div class="meta-cell meta-cargo">
+            <span class="meta-label">Cargo</span><span class="meta-val">${cert.cargo||'—'}</span>
+            <span class="meta-label" style="margin-left:1.5rem;min-width:unset">Showing for:</span>
+            <span class="meta-val">${cert.bundles||'—'}</span>
+          </div>
+        </div>
+        <div class="meas-table-wrap">
+          <table class="meas-table">
+            <thead><tr>
+              <th>Marks</th><th>Number</th>
+              <th>Length (M)</th><th>Breadth (M)</th><th>Depth (M)</th>
+              <th>Total CBM</th><th>Remarks</th>
+            </tr></thead>
+            <tbody>${rowsHtml}</tbody>
+          </table>
+        </div>
+        <div class="totals-block">
+          <div class="totals-inner">
+            <div class="totals-row"><span class="totals-label">Total CBM</span><span class="totals-value">${grandCbm.toFixed(3)}</span></div>
+            <div class="totals-row"><span class="totals-label">Grand Total CBM</span><span class="totals-value">${grandCbm.toFixed(3)}</span></div>
+          </div>
+        </div>
+        ${cert.remarks ? `<div style="margin-bottom:1rem;font-size:0.85rem;color:var(--gray)"><strong>Remarks:</strong> ${cert.remarks}</div>` : ''}
+        <div class="sig-block">
+          <div><div class="sig-line"></div><div class="sig-label">Measured By</div></div>
+          <div><div class="sig-line"></div><div class="sig-label">Prepared By</div></div>
+          <div><div class="sig-line"></div><div class="sig-label">Superintendent</div></div>
+        </div>
+        <div class="disclaimer">The conference accepts no responsibility for mistakes or inaccuracies in measurement or weighments. — Chennai</div>
+      </div>
+    `;
+
+    document.getElementById('detail-delete-btn').onclick = () => deleteCert(id, true);
+    document.getElementById('detail-overlay').classList.add('open');
+    document.body.style.overflow = 'hidden';
+  } catch(e) {
+    alert('Could not load certificate.');
+  }
+}
+
+function closeCert() {
+  document.getElementById('detail-overlay').classList.remove('open');
+  document.body.style.overflow = '';
+  currentCertId = null;
+}
+
+function printCert() {
+  window.print();
+}
+
+async function deleteCert(id, fromModal = false) {
+  if (!confirm('Delete this certificate permanently?')) return;
+  try {
+    await fetch(`${API}/api/certificates/${id}`, { method: 'DELETE' });
+    if (fromModal) closeCert();
+    loadAll();
+  } catch(e) { alert('Delete failed.'); }
+}
+
+// Print full list
+function printList() {
+  const section = document.getElementById('print-list-section');
+  const rows = allRecords;
+  if (!rows.length) { alert('No records to print.'); return; }
+
+  section.innerHTML = `
+    <div style="padding:1.5rem;font-family:'Source Sans 3',sans-serif">
+      <div style="text-align:center;margin-bottom:1.5rem">
+        <div style="font-family:'Libre Baskerville',serif;font-size:1.3rem;font-weight:700;text-transform:uppercase">The Madras Homeward Freight Conference Society</div>
+        <div style="font-size:0.82rem;margin-top:0.25rem">(Measuring Department) — Certificate Register</div>
+        <div style="font-size:0.75rem;color:#888;margin-top:0.15rem">Printed: ${new Date().toLocaleString()}</div>
+      </div>
+      <table style="width:100%;border-collapse:collapse;font-size:0.82rem">
+        <thead>
+          <tr style="background:#1a365d;color:#fff">
+            <th style="padding:0.5rem 0.7rem;text-align:left;border:1px solid #fff">C.No.</th>
+            <th style="padding:0.5rem 0.7rem;text-align:left;border:1px solid #fff">Date</th>
+            <th style="padding:0.5rem 0.7rem;text-align:left;border:1px solid #fff">Agent</th>
+            <th style="padding:0.5rem 0.7rem;text-align:left;border:1px solid #fff">Vessel</th>
+            <th style="padding:0.5rem 0.7rem;text-align:left;border:1px solid #fff">C&F Agent</th>
+            <th style="padding:0.5rem 0.7rem;text-align:left;border:1px solid #fff">Cargo</th>
+            <th style="padding:0.5rem 0.7rem;text-align:left;border:1px solid #fff">Bundles</th>
+            <th style="padding:0.5rem 0.7rem;text-align:right;border:1px solid #fff">Grand CBM</th>
+          </tr>
+        </thead>
+        <tbody>
+          ${rows.map((r,i) => `
+            <tr style="background:${i%2===0?'#f7faff':'#fff'}">
+              <td style="padding:0.4rem 0.7rem;border:1px solid #bee3f8">${r.c_no||'—'}</td>
+              <td style="padding:0.4rem 0.7rem;border:1px solid #bee3f8">${r.cert_date||'—'}</td>
+              <td style="padding:0.4rem 0.7rem;border:1px solid #bee3f8"><strong>${r.agent_name||r.agent||'—'}</strong></td>
+              <td style="padding:0.4rem 0.7rem;border:1px solid #bee3f8">${r.vessel||'—'}</td>
+              <td style="padding:0.4rem 0.7rem;border:1px solid #bee3f8">${r.cf_agent||'—'}</td>
+              <td style="padding:0.4rem 0.7rem;border:1px solid #bee3f8">${r.cargo||'—'}</td>
+              <td style="padding:0.4rem 0.7rem;border:1px solid #bee3f8">${r.bundles||'—'}</td>
+              <td style="padding:0.4rem 0.7rem;border:1px solid #bee3f8;text-align:right"><strong>${parseFloat(r.grand_cbm||0).toFixed(3)}</strong></td>
+            </tr>
+          `).join('')}
+        </tbody>
+      </table>
+      <div style="margin-top:1rem;font-size:0.75rem;color:#888;text-align:right">Total records: ${rows.length}</div>
+    </div>
+  `;
+
+  window.print();
+}
+
+// Close on overlay click
+document.getElementById('detail-overlay').addEventListener('click', function(e) {
+  if (e.target === this) closeCert();
+});
+
+loadAll();
+</script>
+</body>
+</html>

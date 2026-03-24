@@ -1,0 +1,410 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+  <title>Certificate Entry — MHFCS</title>
+  <link href="https://fonts.googleapis.com/css2?family=Libre+Baskerville:ital,wght@0,400;0,700&family=Source+Sans+3:wght@300;400;500;600&display=swap" rel="stylesheet"/>
+  <style>
+    :root{--gd:#1a365d;--gm:#2b6cb0;--gl:#4299e1;--gp:#ebf8ff;--gb:#3182ce;--white:#fff;--cream:#f7faff;--text:#1a202c;--gray:#718096;--light:#f0f6ff;--shadow:0 2px 16px rgba(49,130,206,0.10)}
+    *,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
+    body{font-family:'Source Sans 3',sans-serif;background:#e8f0fc;min-height:100vh;padding-bottom:4rem}
+
+    nav{background:linear-gradient(90deg,#1a365d,#2b6cb0);padding:0.9rem 5%;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:0.75rem}
+    .nav-brand{font-family:'Libre Baskerville',serif;font-size:1rem;font-weight:700;color:#fff;text-decoration:none}
+    .nav-links{display:flex;gap:0.5rem}
+    .nav-link{color:rgba(255,255,255,0.7);text-decoration:none;font-size:0.83rem;font-weight:500;padding:0.4rem 1rem;border-radius:4px;transition:all 0.2s}
+    .nav-link:hover,.nav-link.active{background:rgba(255,255,255,0.15);color:#fff}
+
+    .page{max-width:1050px;margin:2rem auto;padding:0 1.5rem}
+
+    .cert-card{background:var(--white);border-radius:8px;box-shadow:var(--shadow);overflow:hidden}
+    .cert-header{background:linear-gradient(90deg,#1a365d,#2b6cb0);color:#fff;text-align:center;padding:1.4rem 2rem 1.1rem}
+    .cert-org{font-family:'Libre Baskerville',serif;font-size:1.35rem;font-weight:700;letter-spacing:0.03em;text-transform:uppercase;line-height:1.2}
+    .cert-dept{font-size:0.82rem;opacity:0.8;font-style:italic;margin-top:0.25rem}
+    .cert-sub{font-size:0.76rem;opacity:0.7}
+    .cert-contact{font-size:0.72rem;opacity:0.65;margin-top:0.3rem}
+    .cert-title-bar{background:linear-gradient(90deg,#2b6cb0,#4299e1,#2b6cb0);text-align:center;padding:0.45rem;font-family:'Libre Baskerville',serif;font-size:1rem;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:#fff}
+    .cert-body{padding:1.8rem}
+
+    /* META GRID */
+    .meta-grid{display:grid;grid-template-columns:1fr 1fr;gap:0;border:1.5px solid #bee3f8;border-radius:4px;overflow:hidden;margin-bottom:1.5rem}
+    .meta-cell{padding:0.55rem 1rem;border-bottom:1px solid #bee3f8;border-right:1px solid #bee3f8;display:flex;align-items:center;gap:0.6rem;background:#f7faff}
+    .meta-cell:nth-child(even){border-right:none}
+    .meta-cell:last-child,.meta-cell:nth-last-child(2){border-bottom:none}
+    .meta-cargo{grid-column:1/-1;border-right:none;flex-wrap:wrap;gap:0.5rem}
+    .meta-label{font-size:0.72rem;font-weight:600;letter-spacing:0.08em;text-transform:uppercase;color:#2b6cb0;white-space:nowrap;min-width:100px}
+    .meta-input{flex:1;border:none;background:transparent;font-family:'Source Sans 3',sans-serif;font-size:0.9rem;color:var(--text);outline:none;border-bottom:1.5px dashed #b0cebb;padding:0.1rem 0.2rem;transition:border-color 0.2s;min-width:80px}
+    .meta-input:focus{border-bottom-color:var(--gm)}
+    .meta-input[readonly]{color:var(--gm);font-weight:500;border-bottom-style:solid;border-bottom-color:#c8dfd1;cursor:default}
+
+    /* AGENT SELECTOR */
+    .agent-selector{flex:1;display:flex;align-items:center;gap:0.5rem}
+    .agent-select{flex:1;border:none;background:transparent;font-family:'Source Sans 3',sans-serif;font-size:0.9rem;color:var(--text);outline:none;border-bottom:1.5px dashed #b0cebb;padding:0.1rem 0.2rem;cursor:pointer}
+    .agent-select:focus{border-bottom-color:var(--gm)}
+
+    /* TABLE */
+    .table-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:0.6rem}
+    .table-label{font-size:0.72rem;font-weight:600;letter-spacing:0.1em;text-transform:uppercase;color:var(--gd)}
+    .table-wrap{border:1.5px solid #bee3f8;border-radius:4px;overflow:hidden;margin-bottom:1.5rem}
+    table{width:100%;border-collapse:collapse}
+    thead tr{background:linear-gradient(90deg,#1a365d,#2b6cb0);color:#fff}
+    thead th{padding:0.55rem 0.4rem;font-size:0.72rem;font-weight:600;letter-spacing:0.07em;text-transform:uppercase;text-align:center;border-right:1px solid rgba(255,255,255,0.15)}
+    thead th:last-child{border-right:none}
+    .th-sub{font-size:0.62rem;font-weight:400;opacity:0.8;display:block}
+    tbody tr{border-bottom:1px solid #bee3f8;transition:background 0.12s}
+    tbody tr:nth-child(even){background:#f7faff}
+    tbody tr:hover{background:#ebf8ff}
+    tbody tr:last-child{border-bottom:none}
+    tbody td{padding:0.25rem 0.35rem;text-align:center;border-right:1px solid #bee3f8}
+    tbody td:last-child{border-right:none}
+    .td-input{width:100%;border:none;background:transparent;text-align:center;font-family:'Source Sans 3',sans-serif;font-size:0.86rem;color:var(--text);padding:0.22rem;outline:none;border-bottom:1.5px dashed transparent;transition:border-color 0.2s}
+    .td-input:focus{border-bottom-color:var(--gm);background:#fff;border-radius:2px}
+    .td-total{font-weight:600;color:#1a365d;font-size:0.88rem}
+    .btn-remove{background:none;border:none;cursor:pointer;color:#c0392b;font-size:1rem;padding:0.2rem 0.4rem;border-radius:3px;transition:background 0.12s}
+    .btn-remove:hover{background:#fdecea}
+
+    /* TOTALS */
+    .totals-block{display:flex;justify-content:flex-end;margin-bottom:1.5rem}
+    .totals-inner{border:1.5px solid #bee3f8;border-radius:4px;overflow:hidden;min-width:280px}
+    .totals-row{display:flex;align-items:center;justify-content:space-between;padding:0.5rem 1.1rem;border-bottom:1px solid #bee3f8}
+    .totals-row:last-child{border-bottom:none;background:linear-gradient(90deg,#1a365d,#2b6cb0);color:#fff}
+    .totals-label{font-size:0.78rem;font-weight:600;letter-spacing:0.06em;text-transform:uppercase}
+    .totals-value{font-family:'Libre Baskerville',serif;font-size:1rem;font-weight:700;color:var(--gd)}
+    .totals-row:last-child .totals-value{color:#fff}
+
+    /* REMARKS & SIG */
+    .remarks-block{margin-bottom:1.8rem}
+    .remarks-label{font-size:0.72rem;font-weight:600;letter-spacing:0.08em;text-transform:uppercase;color:#1a365d;margin-bottom:0.4rem}
+    .remarks-input{width:100%;border:1.5px solid #bee3f8;border-radius:4px;padding:0.6rem 0.9rem;font-family:'Source Sans 3',sans-serif;font-size:0.88rem;color:var(--text);resize:vertical;min-height:65px;outline:none}
+    .remarks-input:focus{border-color:#4299e1}
+    .sig-block{display:grid;grid-template-columns:1fr 1fr 1fr;gap:2rem;padding-top:1.2rem;border-top:1.5px dashed #b0cebb;margin-bottom:1.2rem}
+    .sig-line{border-bottom:1.5px solid #2b6cb0;height:32px;margin-bottom:0.35rem}
+    .sig-label{font-size:0.72rem;font-weight:600;letter-spacing:0.07em;text-transform:uppercase;color:var(--gray);text-align:center}
+    .disclaimer{font-size:0.7rem;color:var(--gray);text-align:center;font-style:italic;padding-top:0.7rem;border-top:1px solid #d4e8db}
+
+    /* BUTTONS */
+    .btn{padding:0.6rem 1.5rem;font-family:'Source Sans 3',sans-serif;font-size:0.86rem;font-weight:600;border-radius:4px;border:none;cursor:pointer;transition:all 0.2s}
+    .btn-primary{background:linear-gradient(90deg,#1a365d,#2b6cb0);color:#fff} .btn-primary:hover{background:var(--gm)}
+    .btn-outline{background:#fff;color:#1a365d;border:1.5px solid #bee3f8} .btn-outline:hover{background:#ebf8ff}
+    .btn-danger{background:#fff;color:#c0392b;border:1.5px solid #c0392b} .btn-danger:hover{background:#fdecea}
+    .btn-sm{padding:0.35rem 0.9rem;font-size:0.78rem}
+    .action-row{display:flex;gap:0.75rem;justify-content:flex-end;margin-top:1.2rem;flex-wrap:wrap}
+
+    /* FEEDBACK */
+    .fb{display:none;padding:0.65rem 1rem;border-radius:4px;font-size:0.85rem;font-weight:500;margin-bottom:1rem}
+    .fb.ok{display:block;background:#d1fae5;color:#065f46}
+    .fb.err{display:block;background:#fee2e2;color:#991b1b}
+
+    @media print{
+      nav,.action-row,.btn-remove,.table-header .btn,.fb{display:none!important}
+      body{background:#fff;padding:0}
+      .cert-card{box-shadow:none;border-radius:0}
+      .cert-body{padding:1rem}
+    }
+    @media(max-width:640px){
+      .meta-grid{grid-template-columns:1fr}
+      .meta-cell:nth-child(even){border-right:none}
+      .sig-block{grid-template-columns:1fr;gap:1rem}
+    }
+  </style>
+</head>
+<body>
+
+<nav>
+  <a class="nav-brand" href="index.html">🚢 MHFCS</a>
+  <div class="nav-links">
+    <a class="nav-link" href="agents.html">👤 Agents</a>
+    <a class="nav-link active" href="certificate.html">📋 Certificate</a>
+    <a class="nav-link" href="search.html">🔍 Search</a>
+  </div>
+</nav>
+
+<div class="page">
+<div class="cert-card">
+
+  <div class="cert-header">
+    <div class="cert-org">The Madras Homeward Freight Conference Society</div>
+    <div class="cert-dept">(Measuring Department)</div>
+    <div class="cert-sub">(Licensed Measurers in the Port of Chennai)</div>
+    <div class="cert-contact">Phone: 25360087 / 25391523 &nbsp;|&nbsp; Fax: 25391523</div>
+  </div>
+  <div class="cert-title-bar">Certificate Measurement</div>
+
+  <div class="cert-body">
+    <div class="fb" id="fb"></div>
+
+    <!-- META FIELDS -->
+    <div class="meta-grid">
+
+      <!-- Agent dropdown -->
+      <div class="meta-cell">
+        <span class="meta-label">Agent</span>
+        <div class="agent-selector">
+          <select class="agent-select" id="m-agent-sel" onchange="onAgentChange(this)">
+            <option value="">— Select Agent —</option>
+          </select>
+        </div>
+      </div>
+      <div class="meta-cell">
+        <span class="meta-label">C.No.</span>
+        <input class="meta-input" id="m-cno" type="text" placeholder="e.g. 1043"/>
+      </div>
+
+      <!-- Vessel: auto-filled, editable -->
+      <div class="meta-cell">
+        <span class="meta-label">Name of Vessel</span>
+        <input class="meta-input" id="m-vessel" type="text" placeholder="Auto-filled from Agent"/>
+      </div>
+      <div class="meta-cell">
+        <span class="meta-label">Measurer's Slip No.</span>
+        <input class="meta-input" id="m-slip" type="text" placeholder="e.g. 9357"/>
+      </div>
+
+      <!-- CF Agent: auto-filled, editable -->
+      <div class="meta-cell">
+        <span class="meta-label">C &amp; F Agent</span>
+        <input class="meta-input" id="m-cfagent" type="text" placeholder="Auto-filled from Agent"/>
+      </div>
+      <div class="meta-cell">
+        <span class="meta-label">Date</span>
+        <input class="meta-input" id="m-date" type="date"/>
+      </div>
+
+      <div class="meta-cell meta-cargo">
+        <span class="meta-label">Cargo</span>
+        <input class="meta-input" id="m-cargo" type="text" placeholder="e.g. Finished Leather" style="max-width:260px"/>
+        <span class="meta-label" style="min-width:unset">Showing measurement for:</span>
+        <input class="meta-input" id="m-bundles" type="text" placeholder="e.g. 60 Bundles" style="max-width:160px"/>
+      </div>
+    </div>
+
+    <!-- MEASUREMENT TABLE -->
+    <div class="table-header">
+      <span class="table-label">Measurement Entries</span>
+      <button class="btn btn-outline btn-sm" onclick="addRow()">＋ Add Row</button>
+    </div>
+
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th style="width:100px">Marks</th>
+            <th style="width:75px">Number</th>
+            <th>Length<span class="th-sub">M &nbsp; CM</span></th>
+            <th>Breadth<span class="th-sub">M &nbsp; CM</span></th>
+            <th>Depth<span class="th-sub">M &nbsp; CM</span></th>
+            <th style="width:100px">Total CBM</th>
+            <th>Remarks</th>
+            <th style="width:36px"></th>
+          </tr>
+        </thead>
+        <tbody id="table-body"></tbody>
+      </table>
+    </div>
+
+    <!-- TOTALS -->
+    <div class="totals-block">
+      <div class="totals-inner">
+        <div class="totals-row">
+          <span class="totals-label">Total CBM</span>
+          <span class="totals-value" id="total-cbm">0.000</span>
+        </div>
+        <div class="totals-row">
+          <span class="totals-label">Grand Total CBM</span>
+          <span class="totals-value" id="grand-cbm">0.000</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- REMARKS -->
+    <div class="remarks-block">
+      <div class="remarks-label">General Remarks</div>
+      <textarea class="remarks-input" id="m-remarks" placeholder="Any additional notes…"></textarea>
+    </div>
+
+    <!-- SIGNATURES -->
+    <div class="sig-block">
+      <div><div class="sig-line"></div><div class="sig-label">Measured By</div></div>
+      <div><div class="sig-line"></div><div class="sig-label">Prepared By</div></div>
+      <div><div class="sig-line"></div><div class="sig-label">Superintendent</div></div>
+    </div>
+
+    <div class="disclaimer">The conference accepts no responsibility for mistakes or inaccuracies in measurement or weighments. — Chennai</div>
+
+    <div class="action-row">
+      <button class="btn btn-danger" onclick="clearForm()">🗑 Clear</button>
+      <button class="btn btn-outline" onclick="window.print()">🖨 Print</button>
+      <button class="btn btn-primary" onclick="saveCertificate()">💾 Save Certificate</button>
+    </div>
+  </div>
+
+</div>
+</div>
+
+<script>
+const API = 'http://' + window.location.hostname + ':4000';
+let rowCount = 0;
+let agents = [];
+
+// ── AGENTS ───────────────────────────────────────────────────
+async function loadAgents() {
+  try {
+    const res = await fetch(`${API}/api/agents`);
+    agents = await res.json();
+    const sel = document.getElementById('m-agent-sel');
+    sel.innerHTML = '<option value="">— Select Agent —</option>';
+    agents.forEach(a => {
+      const opt = document.createElement('option');
+      opt.value = a.id;
+      opt.textContent = a.agent_name;
+      opt.dataset.cf = a.cf_agent || '';
+      opt.dataset.vessel = a.vessel || '';
+      sel.appendChild(opt);
+    });
+  } catch(e) {
+    console.warn('Could not load agents');
+  }
+}
+
+function onAgentChange(sel) {
+  const opt = sel.options[sel.selectedIndex];
+  if (!opt.value) {
+    document.getElementById('m-cfagent').value = '';
+    document.getElementById('m-vessel').value  = '';
+    return;
+  }
+  document.getElementById('m-cfagent').value = opt.dataset.cf    || '';
+  document.getElementById('m-vessel').value  = opt.dataset.vessel || '';
+}
+
+// ── TABLE ROWS ────────────────────────────────────────────────
+function addRow(data = {}) {
+  rowCount++;
+  const tbody = document.getElementById('table-body');
+  const tr = document.createElement('tr');
+  tr.id = `row-${rowCount}`;
+  tr.innerHTML = `
+    <td><input class="td-input" type="text" placeholder="Mark" value="${data.marks||''}"/></td>
+    <td><input class="td-input" type="number" placeholder="0" value="${data.number||''}" min="0"/></td>
+    <td><input class="td-input meas" type="number" placeholder="0.00" step="0.01" value="${data.length_m||''}" oninput="calcRow(this)"/></td>
+    <td><input class="td-input meas" type="number" placeholder="0.00" step="0.01" value="${data.breadth_m||''}" oninput="calcRow(this)"/></td>
+    <td><input class="td-input meas" type="number" placeholder="0.00" step="0.01" value="${data.depth_m||''}" oninput="calcRow(this)"/></td>
+    <td class="td-total" id="cbm-${rowCount}">${data.total_cbm ? parseFloat(data.total_cbm).toFixed(3) : '—'}</td>
+    <td><input class="td-input" type="text" placeholder="Remarks" value="${data.remarks||''}"/></td>
+    <td><button class="btn-remove" onclick="removeRow('row-${rowCount}')">✕</button></td>
+  `;
+  tbody.appendChild(tr);
+  recalcTotals();
+}
+
+function removeRow(id) {
+  document.getElementById(id)?.remove();
+  recalcTotals();
+}
+
+function calcRow(input) {
+  const tr = input.closest('tr');
+  const m  = tr.querySelectorAll('.meas');
+  const cbm = (parseFloat(m[0].value)||0) * (parseFloat(m[1].value)||0) * (parseFloat(m[2].value)||0);
+  const idx = tr.id.replace('row-','');
+  document.getElementById(`cbm-${idx}`).textContent = cbm > 0 ? cbm.toFixed(3) : '—';
+  recalcTotals();
+}
+
+function recalcTotals() {
+  let t = 0;
+  document.querySelectorAll('[id^="cbm-"]').forEach(el => {
+    const v = parseFloat(el.textContent);
+    if (!isNaN(v)) t += v;
+  });
+  document.getElementById('total-cbm').textContent = t.toFixed(3);
+  document.getElementById('grand-cbm').textContent = t.toFixed(3);
+}
+
+function getRows() {
+  return [...document.querySelectorAll('#table-body tr')].map(tr => {
+    const inp = tr.querySelectorAll('input');
+    const l = parseFloat(inp[2]?.value)||null;
+    const b = parseFloat(inp[3]?.value)||null;
+    const d = parseFloat(inp[4]?.value)||null;
+    return {
+      marks: inp[0]?.value.trim()||null,
+      number: inp[1]?.value.trim()||null,
+      length_m: l, breadth_m: b, depth_m: d,
+      total_cbm: (l&&b&&d) ? l*b*d : null,
+      remarks: inp[5]?.value.trim()||null
+    };
+  });
+}
+
+// ── SAVE ─────────────────────────────────────────────────────
+async function saveCertificate() {
+  const sel = document.getElementById('m-agent-sel');
+  const agent_id   = sel.value ? parseInt(sel.value) : null;
+  const agent_name = sel.value ? sel.options[sel.selectedIndex].textContent : '';
+
+  if (!agent_name) { showFb('Please select an Agent.', 'err'); return; }
+
+  const payload = {
+    c_no:       document.getElementById('m-cno').value.trim(),
+    agent_id,   agent_name,
+    cf_agent:   document.getElementById('m-cfagent').value.trim(),
+    vessel:     document.getElementById('m-vessel').value.trim(),
+    slip_no:    document.getElementById('m-slip').value.trim(),
+    cert_date:  document.getElementById('m-date').value,
+    cargo:      document.getElementById('m-cargo').value.trim(),
+    bundles:    document.getElementById('m-bundles').value.trim(),
+    remarks:    document.getElementById('m-remarks').value.trim(),
+    grand_cbm:  parseFloat(document.getElementById('grand-cbm').textContent)||0,
+    rows:       getRows()
+  };
+
+  try {
+    const res  = await fetch(`${API}/api/certificates`, {
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify(payload)
+    });
+    const data = await res.json();
+    if (res.ok) {
+      showFb(`✅ Certificate saved! ID: ${data.id}`, 'ok');
+    } else {
+      showFb('❌ ' + (data.error||'Save failed.'), 'err');
+    }
+  } catch(e) {
+    showFb('❌ Cannot connect to server.', 'err');
+  }
+}
+
+// ── CLEAR ─────────────────────────────────────────────────────
+function clearForm() {
+  if (!confirm('Clear all fields?')) return;
+  document.getElementById('m-agent-sel').value = '';
+  ['m-cno','m-vessel','m-cfagent','m-slip','m-cargo','m-bundles','m-remarks'].forEach(id => {
+    document.getElementById(id).value = '';
+  });
+  document.getElementById('m-date').value = new Date().toISOString().split('T')[0];
+  document.getElementById('table-body').innerHTML = '';
+  rowCount = 0;
+  document.getElementById('total-cbm').textContent = '0.000';
+  document.getElementById('grand-cbm').textContent = '0.000';
+  for (let i = 0; i < 10; i++) addRow();
+  document.getElementById('fb').className = 'fb';
+}
+
+function showFb(msg, type) {
+  const el = document.getElementById('fb');
+  el.textContent = msg;
+  el.className = 'fb ' + type;
+  setTimeout(() => el.className = 'fb', 6000);
+}
+
+// ── INIT ──────────────────────────────────────────────────────
+document.addEventListener('DOMContentLoaded', () => {
+  document.getElementById('m-date').value = new Date().toISOString().split('T')[0];
+  for (let i = 0; i < 10; i++) addRow();
+  loadAgents();
+});
+</script>
+</body>
+</html>

@@ -1,0 +1,18 @@
+{
+  "name": "mhfcs-certificate-system",
+  "version": "1.0.0",
+  "description": "MHFCS Certificate Measurement System",
+  "main": "cert-server.js",
+  "scripts": {
+    "start": "node cert-server.js",
+    "dev": "nodemon cert-server.js"
+  },
+  "dependencies": {
+    "cors": "^2.8.5",
+    "express": "^4.18.2",
+    "sql.js": "^1.12.0"
+  },
+  "devDependencies": {
+    "nodemon": "^3.0.3"
+  }
+}
